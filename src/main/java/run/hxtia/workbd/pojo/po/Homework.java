@@ -71,6 +71,20 @@ public class Homework implements Serializable {
      * 更新时间
      */
     private Date updatedAt;
+    /**
+     * 作业内容
+     */
+    private String detail;
+    /**
+     * 学期ID
+     */
+    private Integer semesterId;
+    /**
+     * 是否展示【1：展示，0：不展示】
+     */
+    private Short enable;
 
+    public void setPictures(String filePath) {
+    }
 }
 

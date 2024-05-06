@@ -57,4 +57,9 @@ public interface MapStructs {
     // PO -> DTO
     ResourceDto po2dto(Resource po);
 
+
+    Homework reqVo2po(HomeworkReqVo reqVo);
+
+
+    HomeworkReqVo po2vo(Homework selectOne);
 }
