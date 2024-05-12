@@ -7,11 +7,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import run.hxtia.workbd.common.enhance.MpLambdaQueryWrapper;
+import run.hxtia.workbd.common.enhance.MpPage;
+import run.hxtia.workbd.common.mapstruct.MapStructs;
+import run.hxtia.workbd.common.redis.Redises;
 import run.hxtia.workbd.mapper.StudentNotificationMapper;
+import run.hxtia.workbd.pojo.po.Notification;
+import run.hxtia.workbd.pojo.po.Role;
 import run.hxtia.workbd.pojo.po.StudentNotification;
-import run.hxtia.workbd.pojo.vo.common.response.result.ExtendedPageVo;
+import run.hxtia.workbd.pojo.vo.common.response.result.PageVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.request.page.StudentNotificationPageReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.response.NotificationVo;
+import run.hxtia.workbd.pojo.vo.usermanagement.request.page.RolePageReqVo;
+import run.hxtia.workbd.pojo.vo.usermanagement.response.RoleVo;
 import run.hxtia.workbd.service.notificationwork.StudentNotificationService;
 
 import java.util.List;
@@ -20,9 +27,6 @@ import java.util.List;
 @Service
 public class StudentNotificationImpl
     extends ServiceImpl<StudentNotificationMapper,StudentNotification> implements StudentNotificationService{
-
-    @Autowired
-    private StudentNotificationMapper studentNotificationMapper;
 
     /**
      * 根据通知ID列表删除所有相关的学生通知记录
@@ -46,19 +50,19 @@ public class StudentNotificationImpl
     }
 
     @Override
-    public ExtendedPageVo<NotificationVo> getNotificationListByStuId(StudentNotificationPageReqVo reqVo) {
+    public PageVo<NotificationVo> getNotificationListByStuId(StudentNotificationPageReqVo reqVo) {
         Page<?> pageParam = new Page<>(reqVo.getPage(), reqVo.getSize());
 
         // 使用自定义 Mapper 方法进行联表查询
-        Page<NotificationVo> notificationPage = studentNotificationMapper.selectNotificationsByStudentId(pageParam, Long.valueOf(reqVo.getStudentId()));
+        Page<NotificationVo> page = baseMapper.selectNotificationsByStudentId(pageParam, Long.valueOf(reqVo.getStudentId()));
 
         // 构建并返回分页结果
-        ExtendedPageVo<NotificationVo> pageVo = new ExtendedPageVo<>();
-        pageVo.setCount(notificationPage.getTotal());  // 总记录数
-        pageVo.setPages(notificationPage.getPages());  // 总页数
-        pageVo.setData(notificationPage.getRecords()); // 转换为VO的数据记录
-        pageVo.setCurrentPage(notificationPage.getCurrent());  // 当前页码
-        pageVo.setPageSize(notificationPage.getSize());        // 每页记录数
+        PageVo<NotificationVo> pageVo = new PageVo<>();
+        pageVo.setCount(page.getTotal());  // 总记录数
+        pageVo.setPages(page.getPages());  // 总页数
+        pageVo.setData(page.getRecords()); // 转换为VO的数据记录
+        pageVo.setCurrentPage(page.getCurrent());  // 当前页码
+        pageVo.setPageSize(page.getSize());        // 每页记录数
 
         return pageVo;
     }
