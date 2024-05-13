@@ -46,6 +46,7 @@ public class ShiroConfig {
         // 添加自定义 Filter
         Map<String, Filter> filterMap = new HashMap<>();
         filterMap.put("token", new TokenFilter());
+        filterMap.put("wxToken", new WxTokenFilter());
         filterBean.setFilters(filterMap);
 
         // 添加 URI 映射
@@ -60,7 +61,8 @@ public class ShiroConfig {
         uriMap.put("/admin/userManager/users/captcha", "anon");
 
         // test
-        uriMap.put("/wx/notificationWork/notifyAndWork/**", "anon");
+        uriMap.put("/**", "anon");
+        uriMap.put("/wx/**", "anon");
 
 
         // 放行Swagger文档
@@ -73,8 +75,10 @@ public class ShiroConfig {
         // 放行处理Filter内部异常的请求
         uriMap.put(Constants.Web.ERROR_URI, "anon");
 
-        // 其他 URI 使用自定义的 filter
-        uriMap.put("/**", "token");
+        // 其他 admin URI 使用自定义的 filter token
+        uriMap.put("/admin/**", "token");
+        // 其他 admin URI 使用自定义的 filter wxToken
+        uriMap.put("/wx/**", "wxToken");
 
         filterBean.setFilterChainDefinitionMap(uriMap);
         return filterBean;

@@ -10,17 +10,21 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.util.CollectionUtils;
 import run.hxtia.workbd.common.enhance.MpLambdaQueryWrapper;
 import run.hxtia.workbd.common.mapstruct.MapStructs;
+import run.hxtia.workbd.common.util.Streams;
 import run.hxtia.workbd.mapper.StudentCourseMapper;
 import run.hxtia.workbd.pojo.po.Course;
 import run.hxtia.workbd.pojo.po.StudentCourse;
+import run.hxtia.workbd.pojo.vo.common.response.result.PageVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.request.StudentCourseEditReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.request.StudentCourseReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.response.CourseVo;
+import run.hxtia.workbd.pojo.vo.usermanagement.request.page.StudentCoursePageReqVo;
 import run.hxtia.workbd.service.notificationwork.HomeworkService;
 import run.hxtia.workbd.service.notificationwork.StudentHomeworkService;
 import run.hxtia.workbd.service.notificationwork.StudentCourseService;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -116,13 +120,11 @@ public class StudentCourseServiceImpl extends ServiceImpl<StudentCourseMapper, S
         // 使用StudentCourseMapper的selectCoursesByStudentId方法获取课程信息
         List<Course> courses = studentCourseMapper.selectCoursesByStudentId(studentId);
         // 使用MapStructs.INSTANCE.po2vo方法将课程信息转换为视图对象
-        return courses.stream().map(MapStructs.INSTANCE::po2vo).collect(Collectors.toList());
+        return Streams.list2List(courses, MapStructs.INSTANCE::po2vo);
     }
 
     /**
      * 根据学生ID获取分页的学生课程信息
-     * @param studentId ：学生ID
-     * @param page ：分页信息
      * @return 学生课程信息
      */
     @Override

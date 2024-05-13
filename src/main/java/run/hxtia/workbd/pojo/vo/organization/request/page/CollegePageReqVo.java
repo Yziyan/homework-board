@@ -1,20 +1,15 @@
 package run.hxtia.workbd.pojo.vo.organization.request.page;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import run.hxtia.workbd.pojo.vo.common.request.page.KeywordPageReqVo;
-import run.hxtia.workbd.pojo.vo.common.request.page.PageReqVo;
 
-/**
- * @author Xiaojin
- * @date 2024/5/6
- */
 @Data
+@ApiModel("用户信息分页请求Vo")
 @EqualsAndHashCode(callSuper = true)
-public class ClassPageReqVo extends KeywordPageReqVo {
-
-    @ApiModelProperty("年级ID")
-    private Integer gradeId;
-
+public class CollegePageReqVo extends KeywordPageReqVo {
+    @ApiModelProperty("学院ID")
+    private Integer id;
 }

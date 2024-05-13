@@ -21,9 +21,6 @@ import run.hxtia.workbd.mapper.StudentMapper;
 import run.hxtia.workbd.pojo.dto.StudentInfoDto;
 import run.hxtia.workbd.pojo.po.Student;
 import run.hxtia.workbd.pojo.vo.notificationwork.response.StudentVo;
-import run.hxtia.workbd.pojo.vo.organization.response.ClassVo;
-import run.hxtia.workbd.pojo.vo.organization.response.CollegeVo;
-import run.hxtia.workbd.pojo.vo.organization.response.GradeVo;
 import run.hxtia.workbd.pojo.vo.organization.response.OrganizationVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.request.StudentAvatarReqVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.request.StudentReqVo;
@@ -31,9 +28,6 @@ import run.hxtia.workbd.pojo.vo.common.response.WxAccessTokenVo;
 import run.hxtia.workbd.pojo.vo.common.response.WxCodeMsg;
 import run.hxtia.workbd.pojo.vo.common.response.WxTokenVo;
 import run.hxtia.workbd.pojo.vo.common.response.result.CodeMsg;
-import run.hxtia.workbd.service.organization.ClassService;
-import run.hxtia.workbd.service.organization.CollegeService;
-import run.hxtia.workbd.service.organization.GradeService;
 import run.hxtia.workbd.service.usermanagement.StudentService;
 
 import java.util.concurrent.TimeUnit;
@@ -102,14 +96,14 @@ public class StudentServiceImpl extends ServiceImpl<StudentMapper, Student> impl
             }
 
             // 存入缓存中
-            redises.set(Constants.WxMiniApp.WX_AT_PREFIX, token, wxAccessTokenVo.getAccessToken(), wxAccessTokenVo.getExpiresIn(), TimeUnit.SECONDS);
+            redises.set(Constants.WxMiniApp.WX_AT_PREFIX, token, wxAccessTokenVo, wxAccessTokenVo.getExpiresIn(), TimeUnit.SECONDS);
         }
 
         // 构建 TCheck Token 的 URL
         String url = buildCheckSessionUrl(wxTokenVo, wxAccessTokenVo.getAccessToken());
         String resp = HttpClient.httpGetRequest(url);
         WxCodeMsg wxCodeMsg = WxCodeMsg.parseFromJson(resp);
-        if (wxCodeMsg == null) {
+        if (wxCodeMsg == null || wxCodeMsg.getErrcode() != 0) {
             JsonVos.raise(CodeMsg.TOKEN_EXPIRED);
         }
 
@@ -161,8 +155,8 @@ public class StudentServiceImpl extends ServiceImpl<StudentMapper, Student> impl
         Student po = new Student();
         po.setWechatId(wechatId);
         po.setNickname(Strings.getUUID(10));
-        // TODO：设置默认的头像
-        po.setAvatarUrl("");
+        // TODO：改成可配置项，目前硬编码了
+        po.setAvatarUrl("https://hx.404fwf.cn/notifyBoard/img/default-avatar.png");
         if (baseMapper.insert(po) <= 0) {
             return JsonVos.raise(CodeMsg.AUTHORIZED_ERROR);
         }
@@ -177,11 +171,6 @@ public class StudentServiceImpl extends ServiceImpl<StudentMapper, Student> impl
     @Override
     public boolean update(StudentReqVo reqVo) {
         Student po = MapStructs.INSTANCE.reqVo2po(reqVo);
-        // TODO：判断组织是否存在
-//        if (!orgService.isExist(reqVo.getOrgId())) {
-//            return JsonVos.raise(CodeMsg.NO_ORG_INFO);
-//        }
-
         return baseMapper.updateById(po) > 0;
     }
 
@@ -193,7 +182,7 @@ public class StudentServiceImpl extends ServiceImpl<StudentMapper, Student> impl
     @Override
     public boolean update(StudentAvatarReqVo reqVo) throws Exception {
         Student po = new Student();
-        po.setId(reqVo.getId());
+        po.setWechatId(reqVo.getWechatId());
         return Uploads.uploadOneWithPo(po,
             new UploadReqParam(reqVo.getAvatarUrl(),
                 reqVo.getAvatarFile()),
@@ -201,17 +190,14 @@ public class StudentServiceImpl extends ServiceImpl<StudentMapper, Student> impl
     }
 
     @Override
-    public OrganizationVo getOrganizationDetailsByStudentId(Long studentId) throws Exception {
+    public OrganizationVo getOrganizationDetailsByStudentId(String studentId) {
         // 直接通过Mapper方法获取所有信息
-        OrganizationVo organizationVo = studentMapper.getOrganizationDetailsByStudentId(studentId);
-
-        // 检查是否所有必需的信息都被获取
-        if (organizationVo == null || organizationVo.getCollege() == null ||
-            organizationVo.getGrade() == null || organizationVo.getClassVo() == null) {
-            throw new Exception("One or more essential details are missing for student ID: " + studentId);
+        OrganizationVo organizationDetailsByStudentId = studentMapper.getOrganizationDetailsByStudentId(studentId);
+        if (organizationDetailsByStudentId == null) {
+            return JsonVos.raise("未找到该学生的组织信息");
         }
 
-        return organizationVo;
+        return studentMapper.getOrganizationDetailsByStudentId(studentId);
     }
 
     @Override
@@ -238,6 +224,7 @@ public class StudentServiceImpl extends ServiceImpl<StudentMapper, Student> impl
 
 
         StringBuilder url = new StringBuilder(Constants.WxApp.PREFIX);
+        url.append(Constants.WxApp.CHECK_TOKEN);
         url.append("?access_token=").append(accessToken);
         url.append("&openid=").append(wxTokenVo.getOpenid());
         url.append("&signature=").append(signature);

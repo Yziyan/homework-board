@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import run.hxtia.workbd.common.util.JsonVos;
+import run.hxtia.workbd.pojo.vo.common.response.result.DataJsonVo;
+import run.hxtia.workbd.pojo.vo.common.response.result.PageJsonVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.request.StudentCourseEditReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.request.StudentCourseReqVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.request.page.StudentCoursePageReqVo;
@@ -64,13 +66,11 @@ public class StudentCourseController {
         }
     }
 
-
-
-
     @PostMapping("/{studentId}")
     @ApiOperation("根据学生ID获取学生课程信息")
-    public List<CourseVo> getStudentCoursesByStudentId(@PathVariable Integer studentId) {
-        return studentCourseService.getStudentCoursesByStudentId(studentId);
+    public DataJsonVo<List<CourseVo>> getStudentCoursesByStudentId(@PathVariable Integer studentId) {
+        List<CourseVo> courses = studentCourseService.getStudentCoursesByStudentId(studentId);
+        return  JsonVos.ok(courses);
     }
 
     @PostMapping("/exists")
