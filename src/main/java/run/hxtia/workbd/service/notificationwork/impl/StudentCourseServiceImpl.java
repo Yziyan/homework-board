@@ -4,17 +4,22 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.util.CollectionUtils;
 import run.hxtia.workbd.common.enhance.MpLambdaQueryWrapper;
 import run.hxtia.workbd.common.mapstruct.MapStructs;
+import run.hxtia.workbd.common.util.JsonVos;
 import run.hxtia.workbd.common.util.Streams;
 import run.hxtia.workbd.mapper.StudentCourseMapper;
 import run.hxtia.workbd.pojo.po.Course;
 import run.hxtia.workbd.pojo.po.StudentCourse;
+import run.hxtia.workbd.pojo.vo.common.response.result.CodeMsg;
 import run.hxtia.workbd.pojo.vo.common.response.result.PageVo;
+import run.hxtia.workbd.pojo.vo.notificationwork.request.SaveCoursesAndHomeworksReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.request.StudentCourseEditReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.request.StudentCourseReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.response.CourseVo;
@@ -22,6 +27,7 @@ import run.hxtia.workbd.pojo.vo.usermanagement.request.page.StudentCoursePageReq
 import run.hxtia.workbd.service.notificationwork.HomeworkService;
 import run.hxtia.workbd.service.notificationwork.StudentHomeworkService;
 import run.hxtia.workbd.service.notificationwork.StudentCourseService;
+import run.hxtia.workbd.service.usermanagement.StudentService;
 
 import java.util.List;
 import java.util.function.Function;
@@ -36,9 +42,13 @@ import java.util.stream.Collectors;
 public class StudentCourseServiceImpl extends ServiceImpl<StudentCourseMapper, StudentCourse> implements StudentCourseService {
 
 
-    private final StudentCourseMapper studentCourseMapper;
     private final StudentHomeworkService studentHomeworkService;
-    private final HomeworkService homeworkService;
+    private HomeworkService homeworkService;
+
+    @Autowired
+    public void setHomeworkService(@Lazy HomeworkService homeworkService) {
+        this.homeworkService = homeworkService;
+    }
 
     /**
      * 添加学生课程
@@ -75,7 +85,6 @@ public class StudentCourseServiceImpl extends ServiceImpl<StudentCourseMapper, S
         // 检查除当前学生课程外，是否存在相同的学生课程信息
         boolean exists = lambdaQuery().eq(StudentCourse::getStudentId, studentCourse.getStudentId())
             .eq(StudentCourse::getCourseId, studentCourse.getCourseId())
-            .ne(StudentCourse::getId, studentCourse.getId())
             .one() != null;
         if (exists) {
             // 如果存在相同的学生课程信息，返回false，表示更新操作失败
@@ -116,9 +125,9 @@ public class StudentCourseServiceImpl extends ServiceImpl<StudentCourseMapper, S
      * @return 学生课程信息列表
      */
     @Override
-    public List<CourseVo> getStudentCoursesByStudentId(Integer studentId) {
+    public List<CourseVo> getStudentCoursesByStudentId(String studentId) {
         // 使用StudentCourseMapper的selectCoursesByStudentId方法获取课程信息
-        List<Course> courses = studentCourseMapper.selectCoursesByStudentId(studentId);
+        List<Course> courses = baseMapper.selectCoursesByStudentId(studentId);
         // 使用MapStructs.INSTANCE.po2vo方法将课程信息转换为视图对象
         return Streams.list2List(courses, MapStructs.INSTANCE::po2vo);
     }
@@ -128,9 +137,9 @@ public class StudentCourseServiceImpl extends ServiceImpl<StudentCourseMapper, S
      * @return 学生课程信息
      */
     @Override
-    public IPage<CourseVo> getStudentCoursesByStudentIdWithPagination(Integer studentId, Page<StudentCourse> page) {
+    public IPage<CourseVo> getStudentCoursesByStudentIdWithPagination(String studentId, Page<StudentCourse> page) {
         // 使用StudentCourseMapper的selectCoursesByStudentId方法获取课程信息
-        IPage<Course> courses = studentCourseMapper.selectCoursesByStudentIdWithPagination(page, studentId);
+        IPage<Course> courses = baseMapper.selectCoursesByStudentIdWithPagination(page, studentId);
         // 使用MapStructs.INSTANCE.po2vo方法将课程信息转换为视图对象
         IPage<CourseVo> courseVos = courses.convert(MapStructs.INSTANCE::po2vo);
         return courseVos;
@@ -159,46 +168,50 @@ public class StudentCourseServiceImpl extends ServiceImpl<StudentCourseMapper, S
 
     /**
      * 批量保存学生课程和作业信息
-     * @param courseIds 课程ID列表
-     * @param studentId 学生ID
      * @return 是否成功
      */
     @Override
-    @Transactional(readOnly = false, rollbackFor = Exception.class)
-    public boolean saveCoursesAndHomeworks(List<Integer> courseIds, Integer studentId) {
-        try {
-            // 保存学生课程信息
-            boolean saveStudentCourse = saveBatch(courseIds.stream().map(courseId -> {
-                StudentCourse studentCourse = new StudentCourse();
-                studentCourse.setStudentId(studentId);
-                studentCourse.setCourseId(courseId);
-                return studentCourse;
-            }).collect(Collectors.toList()));
-
-            // 如果保存学生课程信息失败，抛出异常
-            if (!saveStudentCourse) {
-                throw new RuntimeException("Failed to save student course");
-            }
-
-            // 获取作业ID
-            List<Long> workIdsByCourseIds = homeworkService.getWorkIdsByCourseIds(courseIds);
-
-            // 保存学生作业信息
-            boolean saveStudentHomework = studentHomeworkService.addStudentHomeworks(workIdsByCourseIds, Long.valueOf(studentId));
-
-            // 如果保存学生作业信息失败，抛出异常
-            if (!saveStudentHomework) {
-                throw new RuntimeException("Failed to save student homework");
-            }
-
-            return true;
-        } catch (Exception e) {
-            // 如果有任何异常，回滚事务并返回false
-            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+    public boolean saveCoursesAndHomeworks(SaveCoursesAndHomeworksReqVo reqVo) {
+        if (reqVo == null) {
             return false;
         }
+
+        List<StudentCourse> studentCourses = Streams.list2List(reqVo.getCourseIds(), (courseId -> {
+            StudentCourse studentCourse = new StudentCourse();
+            studentCourse.setStudentId(reqVo.getStudentId());
+            studentCourse.setCourseId(courseId);
+            return studentCourse;
+        }));
+
+        // 保存学生课程信息
+        boolean saveStudentCourse = saveBatch(studentCourses);
+
+        // 如果保存学生课程信息失败，抛出异常
+        if (!saveStudentCourse) {
+            return false;
+        }
+
+        // 获取作业ID
+        List<Long> workIdsByCourseIds = homeworkService.getWorkIdsByCourseIds(reqVo.getCourseIds());
+
+        // 保存学生作业信息
+       if (!studentHomeworkService.addStudentHomeworks(workIdsByCourseIds, reqVo.getStudentId())) {
+           JsonVos.raise(CodeMsg.SAVE_ERROR);
+       }
+
+       return true;
     }
 
+    /**
+     * 根据课程 ID 查询选了这个课的学生 IDs
+     * @param courseId 学生 ID
+     * @return 课程 Id list
+     */
+    @Override
+    public List<String> listStuIdsByCourseId(Integer courseId) {
+        MpLambdaQueryWrapper<StudentCourse> wrapper = new MpLambdaQueryWrapper<>();
+        wrapper.select(StudentCourse::getStudentId).eq(StudentCourse::getCourseId, courseId);
 
-
+        return Streams.list2List(baseMapper.selectObjs(wrapper), Object::toString);
+    }
 }

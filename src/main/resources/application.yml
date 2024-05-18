@@ -29,3 +29,8 @@ mybatis-plus:
   global-config:
     db-config:
       id-type: auto
+
+springfox:
+  documentation:
+    swagger-ui:
+      enabled: true

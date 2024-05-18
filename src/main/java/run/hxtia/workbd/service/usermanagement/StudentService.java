@@ -10,6 +10,8 @@ import run.hxtia.workbd.pojo.vo.organization.response.OrganizationVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.request.StudentAvatarReqVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.request.StudentReqVo;
 
+import java.util.List;
+
 @Transactional(readOnly = true)
 public interface StudentService extends IService<Student> {
 
@@ -41,7 +43,7 @@ public interface StudentService extends IService<Student> {
      * @return ：是否成功
      */
     @Transactional(readOnly = false)
-    boolean update(StudentReqVo reqVo);
+    boolean update(StudentReqVo reqVo, String token);
 
     /**
      * 用户上传头像
@@ -49,7 +51,7 @@ public interface StudentService extends IService<Student> {
      * @return ：是否成功
      */
     @Transactional(readOnly = false)
-    boolean update(StudentAvatarReqVo reqVo) throws Exception;
+    boolean update(StudentAvatarReqVo reqVo, String token) throws Exception;
 
     // 整合组织
     // TODO 通过学生的id，获取学院、年级、班级信息
@@ -67,6 +69,4 @@ public interface StudentService extends IService<Student> {
      * @return 学生信息
      */
     StudentVo getStudentById(Long studentId) throws Exception;
-
-
 }

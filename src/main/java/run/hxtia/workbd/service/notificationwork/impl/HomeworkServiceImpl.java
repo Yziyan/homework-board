@@ -4,20 +4,26 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+import org.thymeleaf.util.ListUtils;
 import run.hxtia.workbd.common.enhance.MpLambdaQueryWrapper;
 import run.hxtia.workbd.common.enhance.MpPage;
 import run.hxtia.workbd.common.mapstruct.MapStructs;
+import run.hxtia.workbd.common.redis.Redises;
 import run.hxtia.workbd.common.upload.UploadEditParam;
 import run.hxtia.workbd.common.upload.Uploads;
 import run.hxtia.workbd.common.util.Constants;
 import run.hxtia.workbd.common.util.JsonVos;
+import run.hxtia.workbd.common.util.MiniApps;
 import run.hxtia.workbd.common.util.Streams;
 import run.hxtia.workbd.mapper.HomeworkMapper;
 import run.hxtia.workbd.pojo.dto.StudentHomeworkDetailDto;
+import run.hxtia.workbd.pojo.dto.StudentInfoDto;
 import run.hxtia.workbd.pojo.po.Homework;
 import run.hxtia.workbd.pojo.po.StudentHomework;
 import run.hxtia.workbd.pojo.vo.notificationwork.request.page.CourseIdWorkPageReqVo;
@@ -28,8 +34,11 @@ import run.hxtia.workbd.pojo.vo.notificationwork.response.HomeworkVo;
 import run.hxtia.workbd.pojo.vo.common.response.result.ExtendedPageVo;
 import run.hxtia.workbd.pojo.vo.common.response.result.CodeMsg;
 import run.hxtia.workbd.pojo.vo.common.response.result.PageVo;
+import run.hxtia.workbd.pojo.vo.usermanagement.request.page.StudentWorkPageReqVo;
 import run.hxtia.workbd.service.notificationwork.HomeworkService;
+import run.hxtia.workbd.service.notificationwork.StudentCourseService;
 import run.hxtia.workbd.service.notificationwork.StudentHomeworkService;
+import run.hxtia.workbd.service.usermanagement.StudentService;
 
 import java.util.*;
 import java.util.function.Function;
@@ -42,7 +51,15 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public class HomeworkServiceImpl extends ServiceImpl<HomeworkMapper, Homework> implements HomeworkService {
 
+    private final Redises redises;
     private final StudentHomeworkService studentHomeworkService;
+    private StudentCourseService studentCourseService;
+
+    @Autowired
+    public void setStudentCourseService(@Lazy StudentCourseService studentCourseService) {
+        this.studentCourseService = studentCourseService;
+    }
+
 
     /**
      * 分页查询作业
@@ -68,6 +85,22 @@ public class HomeworkServiceImpl extends ServiceImpl<HomeworkMapper, Homework> i
     }
 
     /**
+     * 从微信：保存 or 编辑作业
+     * @param reqVo：作业信息
+     * @return ：是否成功
+     */
+    @Override
+    public boolean saveOrUpdateFromWx(HomeworkReqVo reqVo) throws Exception {
+        // 从 Token 中解析出 Token WX ID
+        String wechatId = MiniApps.getOpenId(reqVo.getWxToken());
+
+        // 然后去学生授权表中查看有无这个课程的权限。
+        // TODO：然后去学生授权表中查看有无这个课程的权限。
+        // 去真正的保存作业
+        return saveOrUpdate(reqVo);
+    }
+
+    /**
      * 保存 or 编辑作业
      * @param reqVo：作业信息
      * @return ：是否成功
@@ -90,8 +123,24 @@ public class HomeworkServiceImpl extends ServiceImpl<HomeworkMapper, Homework> i
         }
 
         try {
-            // 保存数据
-            return saveOrUpdate(po);
+            // 保存作业数据
+            boolean res = saveOrUpdate(po);
+            if (!res) {
+                return false;
+            }
+
+            // 保存成功了，同步将这条作业插入学生的作业表中
+            // TODO：异步去插入，“补偿” 机制
+
+            // 根据课程 ID 查询学生 IDs
+            List<String> stuIds = studentCourseService.listStuIdsByCourseId(po.getCourseId());
+            boolean pushStuWorkOk = studentHomeworkService.addStudentHomeworks(stuIds, po.getId());
+            if (!pushStuWorkOk) {
+                // 对于插入失败的场景，不能回滚作业，那么需要自己开定时任务去 “补偿”
+                log.error("给学生推送作业失败");
+            }
+
+            return true;
         } catch (Exception e) {
             // 出现异常将刚上传的图片给删掉
             log.error(e.getMessage());
@@ -174,36 +223,89 @@ public class HomeworkServiceImpl extends ServiceImpl<HomeworkMapper, Homework> i
 
     /**
      * 根据学生ID查询学生的作业信息列表
-     * @param stuId 学生ID
+     * @param reqVo：分页对象
      * @return 学生的作业信息列表
      */
     @Override
-    public List<StudentHomeworkDetailDto> getWorkInfoListByStuId(Long stuId) {
+    public PageVo<StudentHomeworkDetailDto> getWorkInfoListByStuId(StudentWorkPageReqVo reqVo) {
         // 第一步：获取学生的所有作业记录
-        List<StudentHomework> studentHomeworks = studentHomeworkService.listByStuId(stuId);
+        PageVo<StudentHomework> pages = studentHomeworkService.listByStuId(reqVo);
+        List<StudentHomework> studentHomeworks = pages.getData();
+
+        PageVo<StudentHomeworkDetailDto> resPages = new PageVo<>();
+        resPages.setPages(pages.getPages());
+        resPages.setCurrentPage(pages.getCurrentPage());
+        resPages.setPageSize(pages.getPageSize());
+        resPages.setCount(pages.getCount());
+
         if (studentHomeworks.isEmpty()) {
-            return new ArrayList<>();  // 如果没有作业记录，直接返回空列表
+            return resPages;  // 如果没有作业记录，直接返回空列表
         }
+
         // 第二步：获取所有作业ID
         List<Long> homeworkIds = Streams.list2List(studentHomeworks, StudentHomework::getHomeworkId);
 
         // 第三步：一次性查询所有作业详细信息
         MpLambdaQueryWrapper<Homework> wrapper = new MpLambdaQueryWrapper<>();
-        wrapper.eq(Homework::getStatus, Constants.Status.WORK_ENABLE).in(Homework::getId, homeworkIds);
+        wrapper.like(reqVo.getKeyword(), Homework::getTitle, Homework::getDescription).
+            between(reqVo.getDeadline(), Homework::getDeadline).
+            eq(Homework::getStatus, Constants.Status.WORK_ENABLE).in(Homework::getId, homeworkIds);
+
         List<Homework> homeworks = baseMapper.selectList(wrapper);
 
         // 第四步：将 Homeworks 映射为 Map 以便快速查找
         Map<Long, Homework> homeworkMap = Streams.list2Map(homeworks, Homework::getId, Function.identity());
 
         // 第五步：组装 DTO
-        return Streams.list2List(studentHomeworks, (sh) -> {
+        resPages.setData(Streams.list2List(studentHomeworks, (sh) -> {
             Homework po = homeworkMap.get(sh.getHomeworkId());
             StudentHomeworkDetailDto dto = MapStructs.INSTANCE.po2dto(po);
+            if (po == null) {
+                return dto;
+            }
             dto.setStatus(sh.getStatus());
             dto.setPin(sh.getPin());
             return dto;
-        });
+        }));
+
+        return resPages;
     }
+
+    /**
+     * 根据学生ID查询学生的作业信息列表
+     * @param reqVo：分页对象
+     * @return 学生的作业信息列表
+     */
+    @Override
+    public PageVo<StudentHomeworkDetailDto> getWorkInfoListByStuToken(StudentWorkPageReqVo reqVo) {
+        reqVo.setWechatId(MiniApps.getOpenId(reqVo.getWxToken()));
+        // 第一步：获取学生的所有作业记录
+        return getWorkInfoListByStuId(reqVo);
+    }
+
+    @Override
+    public StudentHomeworkDetailDto getWorkInfo(Long workId, String token) {
+        // 作业信息
+        Homework po = baseMapper.selectById(workId);
+        StudentHomeworkDetailDto dto = MapStructs.INSTANCE.po2dto(po);
+        String stuId = MiniApps.getOpenId(token);
+
+        // 学生作业
+        MpLambdaQueryWrapper<StudentHomework> wrapper = new MpLambdaQueryWrapper<>();
+        wrapper.eq(StudentHomework::getStudentId, stuId)
+            .eq(StudentHomework::getHomeworkId, workId);
+
+        StudentHomework studentHomework = studentHomeworkService.getOne(wrapper);
+        if (studentHomework == null) {
+            return dto;
+        }
+
+        dto.setStatus(studentHomework.getStatus());
+        dto.setPin(studentHomework.getPin());
+
+        return dto;
+    }
+
 
     @Override
     public List<Long> getWorkIdsByCourseIds(List<Integer> courseIdList) {

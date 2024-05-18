@@ -1,5 +1,6 @@
 package run.hxtia.workbd.pojo.po;
 
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
@@ -20,6 +21,7 @@ public class Homework implements Serializable {
     /**
      * 作业ID
      */
+    @TableId
     private Long id;
 
     /**
@@ -50,7 +52,7 @@ public class Homework implements Serializable {
     /**
      * 发布者ID
      */
-    private Integer publisherId;
+    private String publisherId;
 
     /**
      * 发布平台

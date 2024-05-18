@@ -5,8 +5,10 @@ import org.springframework.transaction.annotation.Transactional;
 import run.hxtia.workbd.pojo.po.StudentHomework;
 import run.hxtia.workbd.pojo.vo.common.response.result.ExtendedPageVo;
 import run.hxtia.workbd.pojo.vo.common.response.result.PageVo;
+import run.hxtia.workbd.pojo.vo.notificationwork.request.StudentHomeworkReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.request.page.StudentHomeworkPageReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.response.HomeworkVo;
+import run.hxtia.workbd.pojo.vo.usermanagement.request.page.StudentWorkPageReqVo;
 
 import java.util.List;
 
@@ -24,10 +26,10 @@ public interface StudentHomeworkService extends IService<StudentHomework> {
     boolean removeByWorkId(List<String> workIds);
     /**
      * 根据学生ID查询学生的作业信息列表
-     * @param stuId 学生ID
+     * @param reqVo 分页对象
      * @return 学生的作业信息列表
      */
-    List<StudentHomework> listByStuId(Long stuId);
+    PageVo<StudentHomework> listByStuId(StudentWorkPageReqVo reqVo);
 
     /**
      * 批量添加学生作业关联
@@ -36,7 +38,7 @@ public interface StudentHomeworkService extends IService<StudentHomework> {
      * @return 是否成功
      */
     @Transactional(readOnly = false)
-    boolean addStudentHomeworks(List<Long> workIds, Long stuId);
+    boolean addStudentHomeworks(List<Long> workIds, String stuId);
 
     /**
      * 根据学生ID分页获取学生作业
@@ -45,4 +47,18 @@ public interface StudentHomeworkService extends IService<StudentHomework> {
     */
     PageVo<HomeworkVo> getHomeworksByStudentId(StudentHomeworkPageReqVo reqVo);
 
+    /**
+     * 批量添加学生作业关联
+     * @param stuIds 学生 IDs ID
+     * @param workId 作业 Id
+     * @return 是否成功
+     */
+    boolean addStudentHomeworks(List<String> stuIds, Long workId);
+
+    /**
+     * 更新学生作业状态
+     * @return 是否成功
+     */
+    @Transactional(readOnly = false)
+    boolean update(StudentHomeworkReqVo reqVo);
 }
