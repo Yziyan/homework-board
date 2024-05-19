@@ -57,6 +57,7 @@ public class ShiroConfig {
         uriMap.put("/admin/userManager/users/register", "anon");
         uriMap.put("/admin/userManager/users/sendEmail", "anon");
         uriMap.put("/wx/studentManager/student/getToken", "anon");
+        uriMap.put("/wx/notificationWork/notifyAndWork/work*", "anon");
         uriMap.put("/admin/userManager/users/forgotPwd", "anon");
         uriMap.put("/admin/userManager/users/captcha", "anon");
 

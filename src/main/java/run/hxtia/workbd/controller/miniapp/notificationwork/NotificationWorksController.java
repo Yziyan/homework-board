@@ -16,8 +16,8 @@ import run.hxtia.workbd.pojo.vo.notificationwork.request.HomeworkReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.request.SaveCoursesAndHomeworksReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.request.StudentHomeworkReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.request.page.StudentNotificationPageReqVo;
+import run.hxtia.workbd.pojo.vo.notificationwork.response.HomeworkVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.response.NotificationVo;
-import run.hxtia.workbd.pojo.vo.organization.request.GradeEditReqVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.request.page.StudentWorkPageReqVo;
 import run.hxtia.workbd.service.notificationwork.*;
 
@@ -64,10 +64,10 @@ public class NotificationWorksController {
         return JsonVos.ok(workService.getWorkInfoListByStuToken(reqVo));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/work{id}")
     @ApiOperation("通过作业 Id 获取作业详情信息")
-    public DataJsonVo<StudentHomeworkDetailDto> getWorkInfo(@PathVariable @NotNull Long id, HttpServletRequest request) {
-        return JsonVos.ok(workService.getWorkInfo(id, request.getHeader(Constants.WxMiniApp.WX_TOKEN)));
+    public DataJsonVo<HomeworkVo> getWorkInfo(@PathVariable @NotNull Long id) {
+        return JsonVos.ok(workService.getByWorkId(id));
     }
 
     @PostMapping("/edit")

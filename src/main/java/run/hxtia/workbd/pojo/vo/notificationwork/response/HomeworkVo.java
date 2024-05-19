@@ -40,7 +40,7 @@ public class HomeworkVo {
     @ApiModelProperty("发布平台")
     private String publishPlatform;
 
-    @ApiModelProperty("状态")
+    @ApiModelProperty("状态【1：启用 0：未启用】")
     private Short status;
 
 
