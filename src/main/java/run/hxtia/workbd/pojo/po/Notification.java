@@ -19,6 +19,11 @@ public class Notification implements Serializable {
     private Integer id;
 
     /**
+     * 通知ID
+     */
+    private String notificationUuid;
+
+    /**
      * 标题
      */
     private String title;
@@ -26,22 +31,17 @@ public class Notification implements Serializable {
     /**
      * 消息内容
      */
-    private String message;
+    private String content;
 
     /**
      * 用户ID
      */
-    private String userId;
-
-    /**
-     * 状态
-     */
-    private String status;
+    private String publishId;
 
     /**
      * 类型
      */
-    private String type;
+    private String category;
 
     /**
      * 创建时间
@@ -52,4 +52,9 @@ public class Notification implements Serializable {
      * 更新时间
      */
     private Date updatedAt;
+
+    /**
+     * 是否删除
+     */
+    private Boolean Del;
 }

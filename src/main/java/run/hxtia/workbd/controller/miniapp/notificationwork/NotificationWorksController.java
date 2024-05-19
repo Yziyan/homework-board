@@ -12,10 +12,7 @@ import run.hxtia.workbd.common.util.JsonVos;
 import run.hxtia.workbd.pojo.dto.AdminUserInfoDto;
 import run.hxtia.workbd.pojo.vo.common.response.result.*;
 import run.hxtia.workbd.pojo.dto.StudentHomeworkDetailDto;
-import run.hxtia.workbd.pojo.vo.notificationwork.request.HomeworkReqVo;
-import run.hxtia.workbd.pojo.vo.notificationwork.request.NotificationReqVo;
-import run.hxtia.workbd.pojo.vo.notificationwork.request.SaveCoursesAndHomeworksReqVo;
-import run.hxtia.workbd.pojo.vo.notificationwork.request.StudentHomeworkReqVo;
+import run.hxtia.workbd.pojo.vo.notificationwork.request.*;
 import run.hxtia.workbd.pojo.vo.notificationwork.request.page.StudentNotificationPageReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.response.HomeworkVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.response.NotificationVo;
@@ -112,8 +109,8 @@ public class NotificationWorksController {
     // TODO 发布通知控制层
     @PostMapping("/publishNotification")
     @ApiOperation("发布通知")
-    public JsonVo publishNotification(@Valid @RequestBody NotificationReqVo reqVo, HttpServletRequest request) throws Exception {
-        // 标记发布平台为 WX 后再去保存
+    public JsonVo publishNotification(@Valid @RequestBody NotificationPublishReqVo reqVo, HttpServletRequest request) throws Exception {
+        // 发布通知
         reqVo.fillInfo(request.getHeader(Constants.WxMiniApp.WX_TOKEN));
         notificationService.saveOrUpdateFromWx(reqVo);
         return JsonVos.ok();

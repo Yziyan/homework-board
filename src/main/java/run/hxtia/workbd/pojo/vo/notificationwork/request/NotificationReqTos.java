@@ -15,13 +15,11 @@ import lombok.Data;
 @ApiModel(" 通知发送给的对象 ")
 public class NotificationReqTos {
 
-     // 班级
-    @ApiModelProperty("以班为单位，班级id（可以多选；用 ， 分隔）")
+    // 班级
+    @ApiModelProperty("以班为单位发，就填班级的id（可以多选；用 ， 分隔）")
      private String classId;
 
     // 学生
-    @ApiModelProperty("学生id（可以多选）用 ，分隔")
+    @ApiModelProperty("以学生为单位发，就填学生id（可以多选）用 ，分隔")
     private String studentId;
-
-
 }

@@ -35,8 +35,12 @@ import run.hxtia.workbd.service.notificationwork.StudentCourseService;
 import run.hxtia.workbd.service.notificationwork.StudentHomeworkService;
 import run.hxtia.workbd.service.usermanagement.StudentService;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -218,6 +222,50 @@ public class StudentServiceImpl extends ServiceImpl<StudentMapper, Student> impl
         return res;
     }
 
+    @Override
+    public List<StudentVo> getStudentByClassIds(Set<Integer> classIds) {
+        if (classIds == null || classIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 使用 MpLambdaQueryWrapper 查询
+        MpLambdaQueryWrapper<Student> wrapper = new MpLambdaQueryWrapper<>();
+        wrapper.in(Student::getClassId, classIds);
+
+        // 查询学生信息
+        List<Student> students = baseMapper.selectList(wrapper);
+        if (students == null || students.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 将 Student 对象转换为 StudentVo 对象
+        return students.stream()
+            .map(MapStructs.INSTANCE::po2vo)
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<StudentVo> getStudentsByClassIdsString(String classIdsStr) {
+        Set<Integer> classIdSet = Arrays.stream(classIdsStr.split(","))
+            .map(Integer::parseInt)
+            .collect(Collectors.toSet());
+        return getStudentByClassIds(classIdSet);
+    }
+
+    @Override
+    public List<StudentVo> getStudentsByStudentIds(List<String> studentIds) {
+        if (studentIds == null || studentIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        LambdaQueryWrapper<Student> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(Student::getWechatId, studentIds);
+
+        List<Student> students = baseMapper.selectList(wrapper);
+        return students.stream()
+            .map(MapStructs.INSTANCE::po2vo)
+            .collect(Collectors.toList());
+    }
 
     /**
      * 根据 wxTokenVo 构建验证登录状态的 URL

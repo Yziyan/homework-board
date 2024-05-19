@@ -73,11 +73,14 @@ public class StudentAuthorizationServiceImpl extends ServiceImpl<StudentAuthoriz
         wrapper.eq(StudentAuthorization::getStudentId, studentId);
         StudentAuthorization studentAuthorization = getOne(wrapper);
 
+        // 如果 studentAuthorization 为空，直接返回一个新的空对象
+        if (studentAuthorization == null) {
+            return new StudentAuthorizationSetVo(studentId, new HashSet<>(), new HashSet<>());
+        }
+
         // Set 切割
         Set<String> courseIds = new HashSet<>(Arrays.asList(studentAuthorization.getCourseId().split(",")));
         Set<String> classIds = new HashSet<>(Arrays.asList(studentAuthorization.getClassId().split(",")));
-
-
 
         // 创建一个StudentAuthorizationSetVo
         StudentAuthorizationSetVo vo = new StudentAuthorizationSetVo();

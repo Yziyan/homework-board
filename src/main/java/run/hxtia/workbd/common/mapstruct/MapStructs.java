@@ -109,6 +109,13 @@ public interface MapStructs {
     Authorization reqVo2po(AuthorizationReqVo reqVo);
     StudentHomework reqVo2po(StudentHomeworkReqVo reqVo);
 
+    Notification reqVo2po(NotifyReqVo reqVo);
+
+    @Mapping(source = "notificationUuid", target = "notificationId")
+    StudentNotification reqVo2po(StudentNotificationReqVo reqVo);
+
+
+
     @Mapping(
         source = "deadline",
         target = "deadline",
@@ -131,6 +138,4 @@ public interface MapStructs {
 
 
     Notification reqVo2po(NotificationReqVo reqVo);
-
-
 }

@@ -8,15 +8,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import run.hxtia.workbd.common.enhance.MpLambdaQueryWrapper;
+import run.hxtia.workbd.common.mapstruct.MapStructs;
 import run.hxtia.workbd.mapper.StudentNotificationMapper;
 import run.hxtia.workbd.pojo.po.StudentNotification;
 import run.hxtia.workbd.pojo.vo.common.response.result.ExtendedPageVo;
 import run.hxtia.workbd.pojo.vo.common.response.result.PageVo;
+import run.hxtia.workbd.pojo.vo.notificationwork.request.StudentNotificationReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.request.page.StudentNotificationPageReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.response.NotificationVo;
 import run.hxtia.workbd.service.notificationwork.StudentNotificationService;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -61,6 +64,21 @@ public class StudentNotificationImpl
         pageVo.setPageSize(notificationPage.getSize());        // 每页记录数
 
         return pageVo;
+    }
+
+    @Override
+    @Transactional(readOnly = false)
+    public boolean saveOrUpdate(StudentNotificationReqVo reqVo) {
+        return saveOrUpdate(MapStructs.INSTANCE.reqVo2po(reqVo));
+    }
+
+    @Override
+    @Transactional(readOnly = false)
+    public boolean saveBatch(List<StudentNotificationReqVo> reqVoList) {
+        List<StudentNotification> studentNotifications = reqVoList.stream()
+            .map(MapStructs.INSTANCE::reqVo2po)
+            .collect(Collectors.toList());
+        return saveBatch(studentNotifications);
     }
 
 }

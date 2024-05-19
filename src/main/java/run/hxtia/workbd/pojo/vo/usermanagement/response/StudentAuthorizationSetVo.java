@@ -2,6 +2,7 @@ package run.hxtia.workbd.pojo.vo.usermanagement.response;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.Set;
@@ -11,6 +12,7 @@ import java.util.Set;
  * @date 2024/5/18
  */
 @Data
+@AllArgsConstructor
 @ApiModel("学生授权信息返回对象")
 public class StudentAuthorizationSetVo {
 
@@ -22,4 +24,7 @@ public class StudentAuthorizationSetVo {
 
     @ApiModelProperty("班级ID")
     private Set<String> classId;
+
+    public StudentAuthorizationSetVo() {
+    }
 }

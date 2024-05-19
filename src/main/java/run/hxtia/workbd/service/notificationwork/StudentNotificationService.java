@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 import run.hxtia.workbd.pojo.po.StudentNotification;
 import run.hxtia.workbd.pojo.vo.common.response.result.ExtendedPageVo;
 import run.hxtia.workbd.pojo.vo.common.response.result.PageVo;
+import run.hxtia.workbd.pojo.vo.notificationwork.request.StudentNotificationReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.request.page.StudentNotificationPageReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.response.NotificationVo;
 
@@ -27,6 +28,23 @@ public interface StudentNotificationService extends IService<StudentNotification
      * @return 分页后的学生通知列表
      */
     PageVo<NotificationVo> getNotificationListByStuId(StudentNotificationPageReqVo reqVo);
+
+    /**
+     * 保存|编辑学生通知
+     * @param reqVo 学生通知信息
+     * @return 是否成功
+     */
+    @Transactional(readOnly = false)
+    boolean saveOrUpdate(StudentNotificationReqVo reqVo);
+
+    /**
+     * 批量保存学生通知
+     * @param reqVoList 学生通知信息列表
+     * @return 是否成功
+     */
+    @Transactional(readOnly = false)
+    boolean saveBatch(List<StudentNotificationReqVo> reqVoList);
+
 }
 
 

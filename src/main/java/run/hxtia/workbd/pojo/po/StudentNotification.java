@@ -13,12 +13,23 @@ public class StudentNotification implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
+     * 学生通知的自增ID
+     */
+    private Integer id;
+
+    /**
      * 学生ID
      */
-    private Integer studentId;
+    private String studentId;
 
     /**
      * 通知ID
      */
-    private Integer notificationId;
+    // UUID
+    private String notificationId;
+
+    /**
+     * 是否已读
+     */
+    private Boolean isRead;
 }

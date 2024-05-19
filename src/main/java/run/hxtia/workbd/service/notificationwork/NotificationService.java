@@ -4,10 +4,14 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.transaction.annotation.Transactional;
 import run.hxtia.workbd.pojo.po.Notification;
 import run.hxtia.workbd.pojo.vo.notificationwork.request.HomeworkReqVo;
+import run.hxtia.workbd.pojo.vo.notificationwork.request.NotificationPublishReqVo;
+import run.hxtia.workbd.pojo.vo.notificationwork.request.NotifyReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.request.page.NotificationPageReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.request.NotificationReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.response.NotificationVo;
 import run.hxtia.workbd.pojo.vo.common.response.result.PageVo;
+
+import java.util.List;
 
 /**
  * @author Xiaojin
@@ -58,6 +62,14 @@ public interface NotificationService extends IService<Notification> {
     @Transactional(readOnly = false)
     boolean removeHistory(String ids);
 
+    /**
+     * 保存 or 编辑通知
+     * @param reqVo：通知信息
+     * @return ：是否成功
+     */
+    @Transactional(readOnly = false)
+    boolean saveOrUpdate(NotifyReqVo reqVo);
+
 
     // TODO 发布通知接口定义
     /**
@@ -66,7 +78,22 @@ public interface NotificationService extends IService<Notification> {
      * @return ：是否成功
      */
     @Transactional(readOnly = false)
-    boolean saveOrUpdateFromWx(NotificationReqVo reqVo) throws Exception;
+    boolean saveOrUpdateFromWx(NotificationPublishReqVo reqVo) throws Exception;
+
+    /**
+     * 根据UUID删除通知（逻辑删除）
+     * @param notificationUuid 通知UUID
+     * @return 是否成功
+     */
+    boolean deleteByUuid(String notificationUuid);
+
+    /**
+     * 根据UUID获取通知
+     * @param notificationUuid 通知UUID
+     * @return 通知信息
+     */
+    NotificationVo getByUuid(String notificationUuid);
+
 
 
 }
