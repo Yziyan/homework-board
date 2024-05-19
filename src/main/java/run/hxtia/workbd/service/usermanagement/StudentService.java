@@ -11,6 +11,7 @@ import run.hxtia.workbd.pojo.vo.usermanagement.request.StudentAvatarReqVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.request.StudentReqVo;
 
 import java.util.List;
+import java.util.Set;
 
 @Transactional(readOnly = true)
 public interface StudentService extends IService<Student> {
@@ -53,20 +54,25 @@ public interface StudentService extends IService<Student> {
     @Transactional(readOnly = false)
     boolean update(StudentAvatarReqVo reqVo, String token) throws Exception;
 
-    // 整合组织
-    // TODO 通过学生的id，获取学院、年级、班级信息
     /**
-     * 通过学生的ID获取学院、年级、班级信息
-     * @param studentId 学生ID
-     * @return 包含学院、年级和班级信息的OrganizationVo对象
+     * 获取班级下的所有学生信息
+     * @param classIds：班级IDs
+     * @return ：学生信息
      */
-    OrganizationVo getOrganizationDetailsByStudentId(String studentId) ;
+    List<StudentVo> getStudentByClassIds(Set<Integer> classIds);
 
-    // TODO 通过学生的ID获取学生的信息
     /**
-     * 通过学生的ID获取学生的信息
-     * @param studentId 学生ID
-     * @return 学生信息
+     * 通过字符串形式的班级ID获取学生信息
+     * @param classIdsStr：逗号分隔的班级IDs
+     * @return ：学生信息
      */
-    StudentVo getStudentById(Long studentId) throws Exception;
+    List<StudentVo> getStudentsByClassIdsString(String classIdsStr);
+
+    /**
+     * 通过学生ID获取学生信息
+     * @param studentIds：学生IDs
+     * @return ：学生信息
+     */
+    List<StudentVo> getStudentsByStudentIds(List<String> studentIds);
+
 }

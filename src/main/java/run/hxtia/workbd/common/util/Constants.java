@@ -72,7 +72,20 @@ public class Constants {
         public static final Short Code_EXIT = 0; // 不存在
         public static final Short Code_UNUSE = 1; // 未使用
         public static final Short Code_USED = 2; // 已使用
-        public static final Short Code_REVOKE = 3; // 已吊销
+        public static final Short Code_REVOKE = 3;// 已吊销
+
+        public static final String STU_AUTH_NOT_COURSE = "NOT_COURSE";// 无课程
+        public static final String STU_AUTH_NOT_CLASS = "NOT_CLASS"; // 无班级
+
+        // 通知
+        public static final String NOTIFICATION_STATUS_CLASS = "1"; // 班级
+        public static final String NOTIFICATION_STATUS_USER = "2"; // 学生
+        public static final Boolean NOTIFICATION_STATUS_UNDER = false; // 未删除
+        public static final Boolean NOTIFICATION_STATUS_DEL = true; // 删除
+
+        // 学生通知
+        public static final Boolean STUDENT_NOTIFICATION_STATUS_UNREAD = false; // 未读
+        public static final Boolean STUDENT_NOTIFICATION_STATUS_READ = true ; // 已读
     }
 
     /**

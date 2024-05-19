@@ -12,12 +12,10 @@ import run.hxtia.workbd.common.util.JsonVos;
 import run.hxtia.workbd.pojo.dto.AdminUserInfoDto;
 import run.hxtia.workbd.pojo.vo.common.response.result.*;
 import run.hxtia.workbd.pojo.dto.StudentHomeworkDetailDto;
-import run.hxtia.workbd.pojo.vo.notificationwork.request.HomeworkReqVo;
-import run.hxtia.workbd.pojo.vo.notificationwork.request.SaveCoursesAndHomeworksReqVo;
-import run.hxtia.workbd.pojo.vo.notificationwork.request.StudentHomeworkReqVo;
+import run.hxtia.workbd.pojo.vo.notificationwork.request.*;
 import run.hxtia.workbd.pojo.vo.notificationwork.request.page.StudentNotificationPageReqVo;
+import run.hxtia.workbd.pojo.vo.notificationwork.response.HomeworkVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.response.NotificationVo;
-import run.hxtia.workbd.pojo.vo.organization.request.GradeEditReqVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.request.page.StudentWorkPageReqVo;
 import run.hxtia.workbd.service.notificationwork.*;
 
@@ -48,6 +46,9 @@ public class NotificationWorksController {
 
     private final StudentHomeworkService studentHomeworkService;
 
+    // 通知
+    private final NotificationService notificationService;
+
     // 查看通知列表   已经解决
     @PostMapping("/notifications")
     @ApiOperation("获取学生通知列表")
@@ -64,10 +65,10 @@ public class NotificationWorksController {
         return JsonVos.ok(workService.getWorkInfoListByStuToken(reqVo));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/work{id}")
     @ApiOperation("通过作业 Id 获取作业详情信息")
-    public DataJsonVo<StudentHomeworkDetailDto> getWorkInfo(@PathVariable @NotNull Long id, HttpServletRequest request) {
-        return JsonVos.ok(workService.getWorkInfo(id, request.getHeader(Constants.WxMiniApp.WX_TOKEN)));
+    public DataJsonVo<HomeworkVo> getWorkInfo(@PathVariable @NotNull Long id) {
+        return JsonVos.ok(workService.getByWorkId(id));
     }
 
     @PostMapping("/edit")
@@ -102,6 +103,17 @@ public class NotificationWorksController {
         } else {
             return JsonVos.error(CodeMsg.SAVE_ERROR);
         }
+    }
+
+
+    // TODO 发布通知控制层
+    @PostMapping("/publishNotification")
+    @ApiOperation("发布通知")
+    public JsonVo publishNotification(@Valid @RequestBody NotificationPublishReqVo reqVo, HttpServletRequest request) throws Exception {
+        // 发布通知
+        reqVo.fillInfo(request.getHeader(Constants.WxMiniApp.WX_TOKEN));
+        notificationService.saveOrUpdateFromWx(reqVo);
+        return JsonVos.ok();
     }
 
 }

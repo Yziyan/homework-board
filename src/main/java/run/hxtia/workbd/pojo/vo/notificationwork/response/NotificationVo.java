@@ -9,17 +9,18 @@ import java.util.Date;
 @Data
 @ApiModel("通知信息")
 public class NotificationVo {
-    @ApiModelProperty("通知ID")
-    private Integer id;
 
     @ApiModelProperty("通知标题")
     private String title;
 
     @ApiModelProperty("通知内容")
-    private String message;
+    private String content;
+
+    @ApiModelProperty("发布者id")
+    private String publishId;
 
     @ApiModelProperty("通知类型")
-    private String  type;
+    private String  category;
 
     @ApiModelProperty("创建时间")
     private Date createdAt;
