@@ -19,10 +19,7 @@ import run.hxtia.workbd.pojo.vo.organization.response.CollegeVo;
 import run.hxtia.workbd.pojo.vo.organization.response.GradeVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.request.StudentReqVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.request.*;
-import run.hxtia.workbd.pojo.vo.usermanagement.response.AdminUserVo;
-import run.hxtia.workbd.pojo.vo.usermanagement.response.AuthorizationVo;
-import run.hxtia.workbd.pojo.vo.usermanagement.response.RoleVo;
-import run.hxtia.workbd.pojo.vo.usermanagement.response.StudentAuthorizationVo;
+import run.hxtia.workbd.pojo.vo.usermanagement.response.*;
 
 /**
  * 1、简单Java对象的转换【不用自己写很多 set、get】
@@ -77,6 +74,7 @@ public interface MapStructs {
     // 通知
     NotificationVo po2vo(Notification po);
     NotificationVo po2vo(StudentNotification studentNotification);
+    StudentCodeVo po2vo(StudentCode studentCode);
 
 
    // reqVo -> po  【用来做数据库保存】
@@ -113,6 +111,8 @@ public interface MapStructs {
 
     @Mapping(source = "notificationUuid", target = "notificationId")
     StudentNotification reqVo2po(StudentNotificationReqVo reqVo);
+
+    StudentCode reqVo2po(StudentCodeReqVo reqVo);
 
 
 
