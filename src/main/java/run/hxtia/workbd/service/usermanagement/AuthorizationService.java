@@ -65,6 +65,14 @@ public interface AuthorizationService extends IService<Authorization> {
     @Transactional(readOnly = false)
     CourseAndClassVo verificationCode(String code, String token);
 
+    /**
+     * 删除（逻辑删除）授权码，将传入的code状态设置为 3（已吊销）
+     * @param code ：授权码
+     * @return ：是否成功
+     */
+    @Transactional(readOnly = false)
+    boolean deleteCode(String code);
+
 
 
     /*

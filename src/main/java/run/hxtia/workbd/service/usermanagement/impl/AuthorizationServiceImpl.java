@@ -258,4 +258,10 @@ public class AuthorizationServiceImpl extends ServiceImpl<AuthorizationMapper, A
         return courseAndClassVo;
     }
 
+    @Override
+    public boolean deleteCode(String code) {
+        // 逻辑删除，将传入的code的状态设置为 3（已吊销）
+        return codesService.updateCodeStatus(code, Integer.valueOf(Constants.Status.Code_REVOKE));
+    }
+
 }
