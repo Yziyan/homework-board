@@ -79,6 +79,7 @@ public interface MapStructs {
 
    // reqVo -> po  【用来做数据库保存】
 
+    @Mapping(source = "email", target = "email")
    AdminUsers reqVo2po(AdminUserReqVo reqVo);
    @Mapping(source = "email", target = "username")
    AdminUsers reqVo2po(AdminUserRegisterReqVo reqVo);
