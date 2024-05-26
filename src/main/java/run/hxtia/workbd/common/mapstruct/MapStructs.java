@@ -81,7 +81,7 @@ public interface MapStructs {
 
     @Mapping(source = "email", target = "email")
    AdminUsers reqVo2po(AdminUserReqVo reqVo);
-   @Mapping(source = "email", target = "username")
+   @Mapping(source = "email", target = "email")
    AdminUsers reqVo2po(AdminUserRegisterReqVo reqVo);
    AdminUsers reqVo2po(AdminUserEditReqVo reqVo);
    AdminUsers reqVo2po(AdminUserInfoEditReqVo reqVo);

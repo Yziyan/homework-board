@@ -25,7 +25,7 @@ public class AdminUsers implements Serializable {
     /**
      * 用户名
      */
-    private String username;
+    private String nickname;
 
     /**
      * 用户密码
@@ -71,11 +71,6 @@ public class AdminUsers implements Serializable {
      * 用户状态【1：可用 0：禁用】
      */
     private Short status;
-
-    /**
-     * 姓名
-     */
-    private String nickname;
 
 }
 
