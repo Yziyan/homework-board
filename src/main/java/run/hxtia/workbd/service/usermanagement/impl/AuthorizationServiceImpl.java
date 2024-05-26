@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import run.hxtia.workbd.common.exception.CommonException;
 import run.hxtia.workbd.common.mapstruct.MapStructs;
 import run.hxtia.workbd.common.redis.Redises;
 import run.hxtia.workbd.common.util.Constants;
@@ -28,10 +29,7 @@ import run.hxtia.workbd.pojo.vo.usermanagement.response.StudentAuthorizationVo;
 import run.hxtia.workbd.service.notificationwork.CourseService;
 import run.hxtia.workbd.service.organization.ClassService;
 import run.hxtia.workbd.service.organization.GradeService;
-import run.hxtia.workbd.service.usermanagement.AuthorizationService;
-import run.hxtia.workbd.service.usermanagement.CodesService;
-import run.hxtia.workbd.service.usermanagement.StudentAuthorizationService;
-import run.hxtia.workbd.service.usermanagement.StudentService;
+import run.hxtia.workbd.service.usermanagement.*;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -67,6 +65,8 @@ public class AuthorizationServiceImpl extends ServiceImpl<AuthorizationMapper, A
     // 学生授权表
     private final StudentAuthorizationService studentAuthorizationService;
 
+    // 学生code
+    private final StudentCodeService studentCodeService;
 
 
 
@@ -170,73 +170,6 @@ public class AuthorizationServiceImpl extends ServiceImpl<AuthorizationMapper, A
         return code;
     }
 
-    @Override
-    public String generateCodeByCourseAndClassInfo(AuthCourseAndClassInfoReqVo reqVo, String token) {
-        // 从 Redis 中获取用户权限信息
-        AdminUserPermissionDto userPermissionDto = (AdminUserPermissionDto) redises.get(Constants.Web.ADMIN_PREFIX + token);
-
-        // 获取用户信息
-        AdminUsers users = userPermissionDto.getUsers();
-
-        // 生成code
-        String code = UUID.randomUUID().toString();
-
-        // 将课程ID和班级ID与code关联并存储在Redis中
-        redises.set(Constants.Auth.AUTH_CODE + code, reqVo, Constants.Date.EXPIRE_DATS, TimeUnit.DAYS); // 设置过期时间为7天
-
-        // 将特定的 key 与 code 关联存储到列表中
-//        String userKey = Constants.Auth.AuTH_Code_USER + users.getId();
-//        redises.lpush(userKey, Constants.Auth.ADMIN_AUTH + code);
-//        redises.expire(userKey, Constants.Date.EXPIRE_DAYS, TimeUnit.DAYS); // 设置列表的过期时间
-
-        return code;
-    }
-
-//    @Override
-//    @Transactional(readOnly = false)
-//    public CourseAndClassVo getCourseAndClassByCode(String code, String token) {
-//        // 从redis中获取code key对应的value
-//        AuthCourseAndClassIdReqVo reqVo = (AuthCourseAndClassIdReqVo) redises.get(Constants.Auth.AUTH_CODE + code);
-//
-//        // 课程 和 班级
-//        String courseIdsStr  = reqVo.getCourseIds();
-//        String classIdsStr  = reqVo.getClassIds();
-//
-//        // 学生用户根据 token 获取用户信息
-//
-//        StudentInfoDto studentInfoDto = studentService.getStudentByToken(token);
-//        // 从studentInfoDto 中取出学生基本信息
-//        String wechatId = studentInfoDto.getStudentVo().getWechatId();
-//
-//
-//
-//        // 分割课程和班级ID
-//        List<Integer> courseIds = Arrays.stream(courseIdsStr.split(",")).map(Integer::parseInt).collect(Collectors.toList());
-//        List<Integer> classIds = Arrays.stream(classIdsStr.split(",")).map(Integer::parseInt).collect(Collectors.toList());
-//
-//        // 获取课程信息
-//        List<CourseVo> courseList = courseService.getCoursesByIds(courseIds);
-//
-//        // 获取班级信息
-//        List<ClassVo> classList = classService.getClassesByIds(classIds);
-//
-//        // 获取所有班级的年级ID列表
-//        List<Integer> gradeIds = classList.stream().map(ClassVo::getGradeId).collect(Collectors.toList());
-//
-//        // 获取年级ID与名称的映射
-//        Map<Integer, String> gradeNames = gradeService.getGradeNamesByIds(gradeIds);
-//
-//        // 将班级按年级名称分组
-//        Map<String, List<ClassVo>> gradList = classList.stream()
-//            .collect(Collectors.groupingBy(classVo -> gradeNames.get(classVo.getGradeId())));
-//
-//        // 构建返回对象
-//        CourseAndClassVo courseAndClassVo = new CourseAndClassVo();
-//        courseAndClassVo.setCourseList(courseList);
-//        courseAndClassVo.setGradList(gradList);
-//
-//        return courseAndClassVo;
-//    }
 
     @Override
     @Transactional(readOnly = false)
@@ -314,7 +247,9 @@ public class AuthorizationServiceImpl extends ServiceImpl<AuthorizationMapper, A
         }
 
         // 更新code状态为已使用
-        codesService.updateCodeStatus(code, 2);
+        codesService.updateCodeStatus(code, Integer.valueOf(Constants.Status.Code_USED));
+        // 保存到studentCode记录
+        studentCodeService.save(new StudentCodeReqVo(wechatId, code));
 
         // 构建返回对象
         CourseAndClassVo courseAndClassVo = new CourseAndClassVo();
@@ -322,6 +257,12 @@ public class AuthorizationServiceImpl extends ServiceImpl<AuthorizationMapper, A
         courseAndClassVo.setGradList(gradList);
 
         return courseAndClassVo;
+    }
+
+    @Override
+    public boolean deleteCode(String code) {
+        // 逻辑删除，将传入的code的状态设置为 3（已吊销）
+        return codesService.updateCodeStatus(code, Integer.valueOf(Constants.Status.Code_REVOKE));
     }
 
 }

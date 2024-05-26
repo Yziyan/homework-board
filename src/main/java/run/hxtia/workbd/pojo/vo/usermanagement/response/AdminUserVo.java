@@ -12,9 +12,6 @@ public class AdminUserVo {
     @ApiModelProperty("用户ID")
     private Long id;
 
-    @ApiModelProperty("用户名")
-    private String username;
-
     @ApiModelProperty("头像url")
     private String avatarUrl;
 
@@ -26,5 +23,4 @@ public class AdminUserVo {
 
     @ApiModelProperty("用户状态")
     private Short status;
-
 }

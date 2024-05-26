@@ -15,13 +15,16 @@ import run.hxtia.workbd.pojo.vo.common.response.result.CodeMsg;
 import run.hxtia.workbd.pojo.vo.common.response.result.DataJsonVo;
 import run.hxtia.workbd.pojo.vo.common.response.result.JsonVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.response.CourseAndClassVo;
+import run.hxtia.workbd.pojo.vo.usermanagement.response.StudentCodeVo;
 import run.hxtia.workbd.service.usermanagement.AuthorizationService;
 import run.hxtia.workbd.service.usermanagement.StudentAuthorizationService;
+import run.hxtia.workbd.service.usermanagement.StudentCodeService;
 import run.hxtia.workbd.service.usermanagement.StudentService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @RestController
 @RequestMapping("/wx/studentManager/student")
@@ -32,6 +35,8 @@ public class StudentController {
     private final StudentService studentService;
 
     private final AuthorizationService authorizationService;
+
+    private final StudentCodeService studentCodeService;
 
     @GetMapping("/getToken")
     @ApiOperation("根据 code 获取 token")
@@ -83,5 +88,13 @@ public class StudentController {
         return JsonVos.ok(courseAndClassVo);
     }
 
+    // 查看历史授权码
+    @GetMapping("/getStudentCode")
+    @ApiOperation("获取学生使用过的授权码列表")
+    public DataJsonVo<List<StudentCodeVo>> getStudentCode(HttpServletRequest request) {
+        String token = request.getHeader(Constants.WxMiniApp.WX_TOKEN);
+        List<StudentCodeVo> studentCodeVos = studentCodeService.studentCodelist(token);
+        return JsonVos.ok(studentCodeVos);
+    }
 
 }

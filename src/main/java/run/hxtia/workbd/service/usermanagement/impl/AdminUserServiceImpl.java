@@ -50,7 +50,6 @@ public class AdminUserServiceImpl
 
     /**
      * 用户登录
-     *
      * @param reqVo：登录数据
      * @return ：LoginVo
      */
@@ -59,7 +58,7 @@ public class AdminUserServiceImpl
 
         // 通过用户名查询user
         LambdaQueryWrapper<AdminUsers> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(AdminUsers::getUsername, reqVo.getUsername());
+        wrapper.eq(AdminUsers::getEmail, reqVo.getEmail());
         AdminUsers userPo = baseMapper.selectOne(wrapper);
 
         // 验证用户名
@@ -301,7 +300,7 @@ public class AdminUserServiceImpl
     public PageVo<AdminUserVo> getList(AdminUserPageReqVo pageReqVo) {
 
         MpLambdaQueryWrapper<AdminUsers> wrapper = new MpLambdaQueryWrapper<>();
-        wrapper.like(pageReqVo.getKeyword(), AdminUsers::getUsername, AdminUsers::getNickname);
+        wrapper.like(pageReqVo.getKeyword(), AdminUsers::getNickname);
 
         return baseMapper.
             selectPage(new MpPage<>(pageReqVo), wrapper).
@@ -387,7 +386,7 @@ public class AdminUserServiceImpl
     public PageVo<AdminUserVo> getList(AdminUserPageReqVo pageReqVo, String token) {
 
         MpLambdaQueryWrapper<AdminUsers> wrapper = new MpLambdaQueryWrapper<>();
-        wrapper.like(pageReqVo.getKeyword(), AdminUsers::getUsername, AdminUsers::getNickname).
+        wrapper.like(pageReqVo.getKeyword(), AdminUsers::getNickname).
             eq(AdminUsers::getCollegeId, Redises.getClgIdByToken(token));
 
         return baseMapper.

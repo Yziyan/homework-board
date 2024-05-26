@@ -82,23 +82,31 @@ public class ResourceServiceImpl
 
         for (Resource resource : resources) {
             ResourceDto resDto = MapStructs.INSTANCE.po2dto(resource);
-
             // 直接放入dtoMap中
             dtoMap.put(resource.getId(), resDto);
+        }
 
+        for (Resource resource : resources) {
+            ResourceDto resDto = dtoMap.get(resource.getId());
             Short type = resDto.getType();
             if (type.equals(Constants.Status.DIR_TYPE)) {
-                // 如果是目录.直接添加到返回结果中即可
+                // 如果是目录，直接添加到返回结果中即可
                 tree.add(resDto);
             } else {
                 // 来到这里说明是菜单或者按钮，那么添加到父级目录的子资源里
                 ResourceDto parent = dtoMap.get(resDto.getParentId());
-                List<ResourceDto> children = parent.getChildren();
-                if (children == null) {
-                    // 将其设置为null集合
-                    parent.setChildren(children = new ArrayList<>());
+                if (parent != null) {
+                    List<ResourceDto> children = parent.getChildren();
+                    if (children == null) {
+                        // 将其设置为新建集合
+                        children = new ArrayList<>();
+                        parent.setChildren(children);
+                    }
+                    children.add(resDto);
+                } else {
+                    // 如果找不到父级，记录错误日志
+                    System.err.println("Parent resource not found for resource ID: " + resDto.getId());
                 }
-                children.add(resDto);
             }
         }
         return tree;

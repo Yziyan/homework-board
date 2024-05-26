@@ -14,6 +14,7 @@ public enum CodeMsg {
     UPDATE_PWD_OK(0, "密码修改成功，请重新登录"),
 
     BAD_REQUEST(400, "请求出错"),
+    DEFAULT_ERR_MSG(400, "不可预期的系统异常，请联系管理员"),
     UNAUTHORIZED(401, "未授权"),
     FORBIDDEN(403, "禁止访问"),
     NOT_FOUND(404, "资源不存在"),
@@ -58,10 +59,12 @@ public enum CodeMsg {
     AUTH_CODE_USED(60009, "授权码 code 已被使用"),
     AUTH_CODE_NOT_EXIT(600010, "授权码 code 不存在"),
 
-    AUTH_NOT_PUBLISH(60011, "没有发布权限");
+    AUTH_NOT_PUBLISH(60011, "没有发布权限"),
 
 
-
+    // SQL相关的 code 和 msg
+    SQL_KEYS_ERR(23000, "key重复，添加失败"),
+    SQL_UNIQUE_CONSTRAINT_ERR (1062 , "违反数据完整性约束"),;
 
 
     /**

@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.error.WxError;
 import me.chanjar.weixin.common.error.WxErrorException;
 import org.apache.shiro.authz.AuthorizationException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.BindException;
@@ -19,6 +20,7 @@ import run.hxtia.workbd.pojo.vo.common.response.result.JsonVo;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 import java.util.Objects;
 
@@ -52,6 +54,8 @@ public class CommonExceptionHandler {
             return handle((WxErrorException) t);
         } else if (t instanceof AuthorizationException) {
             return JsonVos.error(CodeMsg.NO_PERMISSION);
+        } else if (t instanceof SQLIntegrityConstraintViolationException) {
+            return handle((SQLIntegrityConstraintViolationException) t);
         }
         // 其他想要处理的异常，继续 else if 拓展异常类即可
 
@@ -60,7 +64,7 @@ public class CommonExceptionHandler {
         if (cause != null) return handle(cause);
 
         // 最终也处理不了的异常【直接返回 400】
-        return JsonVos.error();
+        return JsonVos.error(CodeMsg.DEFAULT_ERR_MSG);
     }
 
     /**
@@ -99,6 +103,20 @@ public class CommonExceptionHandler {
     private JsonVo handle(WxErrorException mae) {
         WxError error = mae.getError();
         return JsonVos.error(error.getErrorCode(), error.getErrorMsg());
+    }
+
+    /**
+     * 处理后端验证【DuplicateKeyException】异常
+     */
+    private JsonVo handle(SQLIntegrityConstraintViolationException e) {
+
+        // 获取CodeMsg中的错误码并转换为字符串
+        String expectedSqlState = String.valueOf(CodeMsg.SQL_KEYS_ERR.getCode());
+
+        if (expectedSqlState.equals(e.getSQLState())) {
+            return JsonVos.error(e.getMessage());
+        }
+        return JsonVos.error(CodeMsg.SQL_UNIQUE_CONSTRAINT_ERR);
     }
 
     /**

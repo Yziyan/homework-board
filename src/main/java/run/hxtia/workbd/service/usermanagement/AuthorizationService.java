@@ -56,14 +56,6 @@ public interface AuthorizationService extends IService<Authorization> {
      */
     String generateSelectionCode(AuthCourseAndClassIdReqVo reqVo, String token);
 
-    /**
-     * 通过课程信息和班级信息，生成授权码
-     *
-     * @param reqVo ：课程信息和班级信息
-     * @param token
-     * @return ：授权码
-     */
-    String generateCodeByCourseAndClassInfo(AuthCourseAndClassInfoReqVo reqVo, String token);
 
     /**
      * 核销code，根据code获取授权码信息
@@ -72,6 +64,16 @@ public interface AuthorizationService extends IService<Authorization> {
      */
     @Transactional(readOnly = false)
     CourseAndClassVo verificationCode(String code, String token);
+
+    /**
+     * 删除（逻辑删除）授权码，将传入的code状态设置为 3（已吊销）
+     * @param code ：授权码
+     * @return ：是否成功
+     */
+    @Transactional(readOnly = false)
+    boolean deleteCode(String code);
+
+
 
     /*
     一开始一个管理员只生成一个code，我可以直接把code set进Redis。也就是 key-value 弄 code——courseAndClass
