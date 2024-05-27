@@ -24,7 +24,7 @@ public interface ResourceService extends IService<Resource> {
      * 构建完整的资源树结构
      * @return ：一整棵父子结构
      */
-    List<ResourceDto> listAllTree();
+    List<ResourceDto> listAllTree(String token);
 
     /**
      * 根据角色IDs获取资源列表

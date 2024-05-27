@@ -16,6 +16,7 @@ import run.hxtia.workbd.pojo.dto.ResourceDto;
 import run.hxtia.workbd.pojo.vo.common.response.result.DataJsonVo;
 import run.hxtia.workbd.service.usermanagement.ResourceService;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @RestController
@@ -35,9 +36,9 @@ public class ResourcesController {
         return JsonVos.ok(resourceService.listMenu(roleIds), "资源获取成功");
     }
 
-    @GetMapping("/searchList")
+    @GetMapping("/getResourseList")
     @ApiOperation("返回完整的树状结构的资源")
-    public DataJsonVo<List<ResourceDto>> searchList() {
-        return JsonVos.ok(resourceService.listAllTree(), "资源获取成功");
+    public DataJsonVo<List<ResourceDto>> searchList(HttpServletRequest request) {
+        return JsonVos.ok(resourceService.listAllTree(request.getHeader(Constants.Web.HEADER_TOKEN)), "资源获取成功");
     }
 }

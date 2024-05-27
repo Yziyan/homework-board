@@ -182,4 +182,7 @@ public class Constants {
         public static final String AUTH_Code_USER = "auth:code:user:";
     }
 
+    public static class Role {
+        public static final Integer SUPER_ADMIN = 1 ;
+    }
 }

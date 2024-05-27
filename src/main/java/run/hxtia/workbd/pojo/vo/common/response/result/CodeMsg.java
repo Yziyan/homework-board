@@ -15,6 +15,7 @@ public enum CodeMsg {
 
     BAD_REQUEST(400, "请求出错"),
     DEFAULT_ERR_MSG(400, "不可预期的系统异常，请联系管理员"),
+    ADMIN_ERR_DELETE(400, "超级管理员不可删除"),
     UNAUTHORIZED(401, "未授权"),
     FORBIDDEN(403, "禁止访问"),
     NOT_FOUND(404, "资源不存在"),

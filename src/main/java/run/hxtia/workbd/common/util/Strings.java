@@ -27,4 +27,20 @@ public class Strings {
         return uuid.substring(0, len);
     }
 
+    /**
+     * 将集合的元素用指定的分隔符连接起来
+     * @param list ：集合
+     * 例如：[1, 2, 3]
+     * 分隔符：","
+     * 返回："1,2,3"
+     * @return ：连接后的字符串
+     */
+    public static String join(Iterable<?> list, String separator) {
+        StringBuilder sb = new StringBuilder();
+        for (Object o : list) {
+            sb.append(o).append(separator);
+        }
+        return sb.substring(0, sb.length() - separator.length());
+    }
+
 }

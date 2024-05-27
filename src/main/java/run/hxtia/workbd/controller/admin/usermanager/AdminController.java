@@ -25,6 +25,7 @@ import run.hxtia.workbd.pojo.vo.common.response.result.DataJsonVo;
 import run.hxtia.workbd.pojo.vo.common.response.result.JsonVo;
 import run.hxtia.workbd.pojo.vo.common.response.result.PageJsonVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.request.*;
+import run.hxtia.workbd.service.usermanagement.AdminUserRoleService;
 import run.hxtia.workbd.service.usermanagement.AdminUserService;
 import run.hxtia.workbd.service.notificationwork.EmailService;
 
@@ -48,6 +49,8 @@ public class  AdminController extends BaseController<AdminUsers, AdminUserReqVo>
 
     private final AdminUserService adminUserService;
     private final EmailService emailService;
+
+    private final AdminUserRoleService adminUserRoleService;
 
     @GetMapping("/sendEmail")
     @ApiOperation("发送邮箱验证码")
@@ -185,7 +188,32 @@ public class  AdminController extends BaseController<AdminUsers, AdminUserReqVo>
     @Override
     @RequiresPermissions(Constants.Permission.ADMIN_DELETE)
     public JsonVo remove(String ids) {
-        return super.remove(ids);
+        boolean isSuperAdmin = false;
+
+        // 如果这个用户是超管 ，可以做一个拦截
+        for (Short roleId : adminUserRoleService.listRoleIds(Long.valueOf(ids))) {
+            if (roleId.equals(Constants.Role.SUPER_ADMIN.shortValue())) {
+                isSuperAdmin = true;
+                break;
+            }
+        }
+
+        if (isSuperAdmin) {
+            return JsonVos.error(CodeMsg.ADMIN_ERR_DELETE);
+        }
+
+        super.remove(ids);
+        // 删除之后，需要清空缓存，
+        // 清空缓存中的token就可以了
+        for (String id : ids.split(",")) {
+            // 删除之后，需要清空缓存，
+            // 清空缓存中的token就可以了
+            Redises.getRedises().delByUserId(Long.valueOf(id));
+        }
+
+        // 删除数据库中的角色信息
+        adminUserRoleService.removeByUserId(Long.valueOf(ids));
+        return JsonVos.ok(CodeMsg.REMOVE_OK);
     }
 
     @Override

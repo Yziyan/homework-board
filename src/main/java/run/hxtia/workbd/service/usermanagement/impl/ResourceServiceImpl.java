@@ -7,11 +7,15 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import run.hxtia.workbd.common.enhance.MpLambdaQueryWrapper;
 import run.hxtia.workbd.common.mapstruct.MapStructs;
+import run.hxtia.workbd.common.redis.Redises;
 import run.hxtia.workbd.common.util.Constants;
 import run.hxtia.workbd.common.util.Streams;
+import run.hxtia.workbd.common.util.Strings;
 import run.hxtia.workbd.mapper.ResourceMapper;
+import run.hxtia.workbd.pojo.dto.AdminUserPermissionDto;
 import run.hxtia.workbd.pojo.dto.ResourceDto;
 import run.hxtia.workbd.pojo.po.Resource;
+import run.hxtia.workbd.pojo.po.Role;
 import run.hxtia.workbd.service.usermanagement.ResourceService;
 import run.hxtia.workbd.service.usermanagement.RoleResourceService;
 
@@ -23,6 +27,8 @@ public class ResourceServiceImpl
     extends ServiceImpl<ResourceMapper, Resource> implements ResourceService {
 
     private final RoleResourceService roleResourceService;
+    // Redis
+    private final Redises redises;
 
     /**
      * 根据角色ID构建树状结构的菜单
@@ -32,9 +38,14 @@ public class ResourceServiceImpl
     @Override
     public List<ResourceDto> listMenu(String roleStrIds) {
         if (!StringUtils.hasLength(roleStrIds)) return null;
-
         // 解析角色IDString
         List<Short> roleIds = Streams.list2List(Arrays.asList(roleStrIds.split(",")), Short::valueOf);
+        // 构建资源树
+        return listMenu(roleIds);
+    }
+
+    public List<ResourceDto> listMenu(List<Short> roleIds) {
+        if (roleIds.isEmpty()) return null;
         // 获取所有角色对应的资源ID【去重后的】
         List<Short> resourceIds = roleResourceService.listResourceIds(roleIds);
         // 获取排序后的资源
@@ -48,10 +59,11 @@ public class ResourceServiceImpl
      * @return ：一整棵父子结构
      */
     @Override
-    public List<ResourceDto> listAllTree() {
-        MpLambdaQueryWrapper<Resource> wrapper = new MpLambdaQueryWrapper<>();
-        wrapper.orderByAsc(Resource::getType);
-        return listComTree(baseMapper.selectList(wrapper));
+    public List<ResourceDto> listAllTree(String token) {
+        // 从 Redis 中获取用户权限信息
+        AdminUserPermissionDto userPermissionDto = redises.getT(Constants.Web.ADMIN_PREFIX + token);
+        List<Role> roles = userPermissionDto.getRoles();
+        return listMenu(Streams.list2List(roles, Role::getId));
     }
 
     /**

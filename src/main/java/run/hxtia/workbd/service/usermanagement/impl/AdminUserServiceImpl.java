@@ -134,6 +134,7 @@ public class AdminUserServiceImpl
         String psdWithMd5 = Md5s.md5(reqVo.getPassword(), salt);
         // 这里比较特殊，都得自己手动设置值
         po = MapStructs.INSTANCE.reqVo2po(reqVo);
+        po.setNickname(reqVo.getEmail());
         po.setSalt(salt);
         po.setPassword(psdWithMd5);
         po.setCollegeId(defaultClg.getId());
@@ -392,6 +393,5 @@ public class AdminUserServiceImpl
         return baseMapper.
             selectPage(new MpPage<>(pageReqVo), wrapper).
             buildVo(MapStructs.INSTANCE::po2adminUserVo);
-
     }
 }
