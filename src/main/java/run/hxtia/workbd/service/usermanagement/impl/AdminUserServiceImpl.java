@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import run.hxtia.workbd.common.cache.Caches;
@@ -34,6 +35,7 @@ import run.hxtia.workbd.service.usermanagement.AdminUserService;
 import run.hxtia.workbd.service.usermanagement.ResourceService;
 import run.hxtia.workbd.service.usermanagement.RoleService;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -393,5 +395,33 @@ public class AdminUserServiceImpl
         return baseMapper.
             selectPage(new MpPage<>(pageReqVo), wrapper).
             buildVo(MapStructs.INSTANCE::po2adminUserVo);
+    }
+
+    @Override
+    @Transactional(readOnly = false)
+    public boolean delete(String ids) {
+        boolean isSuperAdmin = false;
+        // 如果这个用户是超管 ，可以做一个拦截
+        for (Short roleId : adminUserRoleService.listRoleIds(Long.valueOf(ids))) {
+            if (roleId.equals(Constants.Role.SUPER_ADMIN.shortValue())) {
+                isSuperAdmin = true;
+                break;
+            }
+        }
+        if (isSuperAdmin) {
+            return false;
+        }
+
+        // 删除用户
+        removeByIds(Arrays.asList(ids.split(",")));
+
+        // 删除之后，需要清空缓存
+        for (String id : ids.split(",")) {
+            redises.delByUserId(Long.valueOf(id));
+        }
+
+        // 删除数据库中的角色信息
+        adminUserRoleService.removeByUserId(Long.valueOf(ids));
+        return true;
     }
 }

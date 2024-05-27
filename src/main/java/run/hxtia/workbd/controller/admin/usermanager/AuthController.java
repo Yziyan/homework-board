@@ -62,8 +62,4 @@ public class  AuthController {
     public DataJsonVo<List<CodeAndCourseAndClassInfoVo>> getCodeList(HttpServletRequest request) {
         return JsonVos.ok(codesService.getCodelistByUserId(request.getHeader(Constants.Web.HEADER_TOKEN)));
     }
-
-
-
-
 }

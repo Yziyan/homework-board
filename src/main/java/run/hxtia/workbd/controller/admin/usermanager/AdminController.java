@@ -188,31 +188,10 @@ public class  AdminController extends BaseController<AdminUsers, AdminUserReqVo>
     @Override
     @RequiresPermissions(Constants.Permission.ADMIN_DELETE)
     public JsonVo remove(String ids) {
-        boolean isSuperAdmin = false;
-
-        // 如果这个用户是超管 ，可以做一个拦截
-        for (Short roleId : adminUserRoleService.listRoleIds(Long.valueOf(ids))) {
-            if (roleId.equals(Constants.Role.SUPER_ADMIN.shortValue())) {
-                isSuperAdmin = true;
-                break;
-            }
-        }
-
-        if (isSuperAdmin) {
+        boolean result = adminUserService.delete(ids);
+        if (!result) {
             return JsonVos.error(CodeMsg.ADMIN_ERR_DELETE);
         }
-
-        super.remove(ids);
-        // 删除之后，需要清空缓存，
-        // 清空缓存中的token就可以了
-        for (String id : ids.split(",")) {
-            // 删除之后，需要清空缓存，
-            // 清空缓存中的token就可以了
-            Redises.getRedises().delByUserId(Long.valueOf(id));
-        }
-
-        // 删除数据库中的角色信息
-        adminUserRoleService.removeByUserId(Long.valueOf(ids));
         return JsonVos.ok(CodeMsg.REMOVE_OK);
     }
 

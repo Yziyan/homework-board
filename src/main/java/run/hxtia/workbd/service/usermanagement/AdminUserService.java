@@ -104,4 +104,13 @@ public interface AdminUserService extends IService<AdminUsers> {
      * @return 返回用户基本信息
      */
     PageVo<AdminUserVo> getList(AdminUserPageReqVo pageReqVo, String token);
+
+    /**
+     * 删除一个多个用户
+     * @param ids ：用户ids
+     * @return ：是否成功
+     */
+    @Transactional(readOnly = false)
+    boolean delete(String ids);
+
 }
