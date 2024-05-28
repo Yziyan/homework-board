@@ -20,6 +20,9 @@ public class CourseVo {
     @ApiModelProperty("课程名称")
     private String name;
 
+    @ApiModelProperty("课程描述")
+    private String description;
+
     @ApiModelProperty("课程教师id")
     private Integer teacherId;
 

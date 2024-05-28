@@ -45,6 +45,7 @@ import run.hxtia.workbd.service.usermanagement.StudentService;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * 作业模块 【管理】业务层
@@ -74,19 +75,31 @@ public class HomeworkServiceImpl extends ServiceImpl<HomeworkMapper, Homework> i
      */
     @Override
     public PageVo<HomeworkVo> list(HomeworkPageReqVo pageReqVo, Short status) {
-
         // 构建分页sql
         MpLambdaQueryWrapper<Homework> wrapper = new MpLambdaQueryWrapper<>();
-        wrapper.like(pageReqVo.getKeyword(), Homework::getTitle, Homework::getDescription, Homework::getPublishPlatform).
-            between(pageReqVo.getCreatedTime(), Homework::getCreatedAt).
-            between(pageReqVo.getDeadline(), Homework::getUpdatedAt).
-            eq(Homework::getCourseId, pageReqVo.getCourseId()).
-            eq(Homework::getPublisherId, pageReqVo.getPublisherId()).
-            eq(Homework::getStatus, status);
+        wrapper.like(pageReqVo.getKeyword(), Homework::getTitle, Homework::getDescription, Homework::getPublishPlatform)
+            .between(pageReqVo.getCreatedTime(), Homework::getCreatedAt)
+            .between(pageReqVo.getDeadline(), Homework::getUpdatedAt)
+            .eq(Homework::getCourseId, pageReqVo.getCourseId())
+            .eq(Homework::getPublisherId, pageReqVo.getPublisherId())
+            .eq(Homework::getStatus, status)
+            .orderByDesc(Homework::getCreatedAt);
 
-        return baseMapper.
-            selectPage(new MpPage<>(pageReqVo), wrapper).
-            buildVo(MapStructs.INSTANCE::po2vo);
+        Page<Homework> page = baseMapper.selectPage(new MpPage<>(pageReqVo), wrapper);
+        List<HomeworkVo> vos = page.getRecords().stream()
+            .map(homework -> {
+                HomeworkVo vo = MapStructs.INSTANCE.po2vo(homework);
+                // 判断是否有图片，如果有则拼接前缀，如果没有则返回空字符串
+                if (homework.getPictureLinks() != null && !homework.getPictureLinks().isEmpty()) {
+                    vo.setPictureLinks(Constants.Homework.IMAGE_BASE_URL + homework.getPictureLinks());
+                } else {
+                    vo.setPictureLinks(""); // 若没有图片链接，则返回空字符串
+                }
+                return vo;
+            })
+            .collect(Collectors.toList());
+
+        return new PageVo<>(page.getTotal(), page.getPages(), page.getCurrent(), page.getSize(), vos);
     }
 
     /**

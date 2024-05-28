@@ -3,12 +3,14 @@ package run.hxtia.workbd.pojo.vo.common.response.result;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.List;
 
 // Service 分页结果
 @Data
+@AllArgsConstructor
 public class PageVo<T> {
     // 总数
     private Long count;
@@ -24,4 +26,7 @@ public class PageVo<T> {
 
     // 数据
     private List<T> data;
+
+    public PageVo() {
+    }
 }
