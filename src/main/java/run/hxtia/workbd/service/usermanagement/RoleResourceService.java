@@ -27,4 +27,13 @@ public interface RoleResourceService extends IService<RoleResource> {
     @Transactional(readOnly = false)
     boolean removeByRoleId(Short roleId);
 
+
+    /**
+     * 根据角色ID列表删除所有资源
+     * @param roleIds 角色ID列表
+     * @return 是否成功
+     */
+    @Transactional(readOnly = false)
+    boolean removeByRoleIds(List<Short> roleIds);
+
 }

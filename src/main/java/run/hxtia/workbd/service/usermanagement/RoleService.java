@@ -8,6 +8,8 @@ import run.hxtia.workbd.pojo.vo.usermanagement.request.RoleReqVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.response.RoleVo;
 import run.hxtia.workbd.pojo.vo.common.response.result.PageVo;
 
+import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -46,4 +48,11 @@ public interface RoleService extends IService<Role> {
      * @return ：组织内角色
      */
     List<Role> list(String token);
+
+    /**
+     * 删除角色及其关联的用户角色信息
+     * @param roleIds 角色ID集合
+     * @return 是否删除成功
+     */
+    boolean removeRoles(List<Short> roleIds);
 }

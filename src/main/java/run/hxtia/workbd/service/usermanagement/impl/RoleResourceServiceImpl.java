@@ -1,5 +1,6 @@
 package run.hxtia.workbd.service.usermanagement.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -50,5 +51,11 @@ public class RoleResourceServiceImpl
         wrapper.eq(RoleResource::getRoleId, roleId);
 
         return baseMapper.delete(wrapper) > 0;
+    }
+
+    @Override
+    public boolean removeByRoleIds(List<Short> roleIds) {
+        // 实现批量删除逻辑
+        return remove(new MpLambdaQueryWrapper<RoleResource>().in(RoleResource::getRoleId, roleIds));
     }
 }

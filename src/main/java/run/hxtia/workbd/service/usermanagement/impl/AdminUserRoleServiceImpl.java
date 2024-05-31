@@ -3,6 +3,7 @@ package run.hxtia.workbd.service.usermanagement.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import run.hxtia.workbd.common.enhance.MpLambdaQueryWrapper;
 import run.hxtia.workbd.common.util.Streams;
@@ -84,5 +85,21 @@ public class AdminUserRoleServiceImpl
         wrapper.select(AdminUserRole::getUserId).eq(AdminUserRole::getRoleId, roleId);
         List<Object> userIds = baseMapper.selectObjs(wrapper);
         return Streams.list2List(userIds, (userId) -> (Long) userId);
+    }
+
+    @Override
+    @Transactional(readOnly = false)
+    public boolean removeByRoleId(Short roleId) {
+        LambdaQueryWrapper<AdminUserRole> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(AdminUserRole::getRoleId, roleId);
+        return this.remove(queryWrapper);
+    }
+
+    @Override
+    @Transactional(readOnly = false)
+    public boolean removeByRoleIds(List<Short> roleIds) {
+        LambdaQueryWrapper<AdminUserRole> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(AdminUserRole::getRoleId, roleIds);
+        return this.remove(queryWrapper);
     }
 }

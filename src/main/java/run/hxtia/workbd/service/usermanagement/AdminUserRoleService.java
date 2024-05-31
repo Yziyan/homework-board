@@ -40,4 +40,20 @@ public interface AdminUserRoleService extends IService<AdminUserRole> {
      */
     List<Long> listAdminUserIds(Short roleId);
 
+    /**
+     * 根据角色ID，删除所有的用户角色关联信息
+     * @param roleId：角色ID
+     * @return ：是否成功
+     */
+    @Transactional(readOnly = false)
+    boolean removeByRoleId(Short roleId);
+
+    /**
+     * 根据角色ID集合，删除所有的用户角色关联信息
+     * @param roleIds：角色ID集合
+     * @return ：是否成功
+     */
+    @Transactional(readOnly = false)
+    boolean removeByRoleIds(List<Short> roleIds);
+
 }

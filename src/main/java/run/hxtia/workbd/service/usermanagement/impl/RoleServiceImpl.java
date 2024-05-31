@@ -3,6 +3,7 @@ package run.hxtia.workbd.service.usermanagement.impl;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import run.hxtia.workbd.common.enhance.MpLambdaQueryWrapper;
 import run.hxtia.workbd.common.enhance.MpPage;
@@ -21,7 +22,9 @@ import run.hxtia.workbd.service.usermanagement.AdminUserRoleService;
 import run.hxtia.workbd.service.usermanagement.RoleResourceService;
 import run.hxtia.workbd.service.usermanagement.RoleService;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Service
@@ -127,5 +130,18 @@ public class RoleServiceImpl
         wrapper.eq(Role::getCollegeId, Redises.getClgIdByToken(token));
 
         return list(wrapper);
+    }
+
+    @Override
+    @Transactional(readOnly = false)
+    public boolean removeRoles(List<Short> roleIds) {
+        // 删除用户角色关联信息
+        adminUserRoleService.removeByRoleIds(roleIds);
+
+        // 删除角色资源关联信息
+        roleResourceService.removeByRoleIds(roleIds);
+
+        // 删除角色
+        return super.removeByIds(roleIds);
     }
 }
