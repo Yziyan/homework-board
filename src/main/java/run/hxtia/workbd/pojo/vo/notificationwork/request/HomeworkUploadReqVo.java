@@ -17,10 +17,6 @@ public class HomeworkUploadReqVo {
     @ApiModelProperty(value = "作业ID", required = true)
     private Long id;
 
-    @NotNull
-    @ApiModelProperty(value = "作业图片原URL", required = true)
-    private String pictures;
-
     @ApiModelProperty("图片数据")
     private List<MultipartFile> picturesFiles;
 
