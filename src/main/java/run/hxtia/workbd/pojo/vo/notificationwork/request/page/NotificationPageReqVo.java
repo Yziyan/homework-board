@@ -17,6 +17,6 @@ public class NotificationPageReqVo extends KeywordPageReqVo {
     @ApiModelProperty("创建时间，传入一个数组【一个时间范围：开始 - 结束】")
     private Date[] createdTime;
 
-    @ApiModelProperty("通知类型")
-    private String type;
+//    @ApiModelProperty("通知类型")
+//    private String type;
 }

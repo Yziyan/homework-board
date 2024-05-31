@@ -29,11 +29,9 @@ public class NotificationReqVo {
     @ApiModelProperty(value = "接收者类型（用户1、班级2等）", required = true)
     private String receiver_type;
 
-    @NotNull
     @ApiModelProperty(value = "接收者ID列表", required = true)
     private String receiver_ids;
 
-    @NotNull
     @ApiModelProperty(value = "班级ID列表", required = true)
     private String class_id;
 

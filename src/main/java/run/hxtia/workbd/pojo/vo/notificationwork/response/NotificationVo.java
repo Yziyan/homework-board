@@ -13,6 +13,9 @@ public class NotificationVo {
     @ApiModelProperty("通知标题")
     private String title;
 
+    @ApiModelProperty("通知uuid")
+    private String notificationUuid;  // 我新增加的
+
     @ApiModelProperty("通知内容")
     private String content;
 
