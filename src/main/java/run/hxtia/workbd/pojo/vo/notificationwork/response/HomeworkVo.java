@@ -45,21 +45,5 @@ public class HomeworkVo {
 
     @ApiModelProperty("状态【1：启用 0：未启用】")
     private Short status;
-
-
-    public void jointPictureLinks(String joint) {
-        if (!StringUtils.hasLength(pictureLinks)) {
-            return;
-        }
-
-        // 说明有图片，每一个都拼接上前缀
-        String[] links = pictureLinks.split(Constants.SpecialChars.COMMA);
-
-        for (int i = 0; i < links.length; i++) {
-            links[i] =  joint + links[i];
-        }
-
-        pictureLinks = Strings.join(links, Constants.SpecialChars.COMMA);
-    }
 }
 

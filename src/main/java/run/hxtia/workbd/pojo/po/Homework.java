@@ -3,6 +3,9 @@ package run.hxtia.workbd.pojo.po;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
+import org.springframework.util.StringUtils;
+import run.hxtia.workbd.common.util.Constants;
+import run.hxtia.workbd.common.util.Strings;
 
 import java.util.Date;
 import java.io.Serializable;
@@ -74,5 +77,19 @@ public class Homework implements Serializable {
      */
     private Date updatedAt;
 
+    public void jointPictureLinks(String joint) {
+        if (!StringUtils.hasLength(pictureLinks)) {
+            return;
+        }
+
+        // 说明有图片，每一个都拼接上前缀
+        String[] links = pictureLinks.split(Constants.SpecialChars.COMMA);
+
+        for (int i = 0; i < links.length; i++) {
+            links[i] =  joint + links[i];
+        }
+
+        pictureLinks = Strings.join(links, Constants.SpecialChars.COMMA);
+    }
 }
 

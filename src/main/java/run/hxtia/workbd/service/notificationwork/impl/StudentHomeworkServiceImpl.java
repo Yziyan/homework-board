@@ -59,7 +59,8 @@ public class StudentHomeworkServiceImpl
         wrapper.between(pageReqVo.getCreatedTime(), StudentHomework::getCreatedAt).
             eq(StudentHomework::getStudentId, pageReqVo.getWechatId()).
             eq(StudentHomework::getStatus, pageReqVo.getStatus()).
-            eq(StudentHomework::getPin, pageReqVo.getPin());
+            eq(StudentHomework::getPin, pageReqVo.getPin()).
+            orderByDesc(StudentHomework::getUpdatedAt);
 
         // 构建分页结果
         return baseMapper.

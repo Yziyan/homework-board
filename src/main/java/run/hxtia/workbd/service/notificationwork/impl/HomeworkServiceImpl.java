@@ -85,9 +85,8 @@ public class HomeworkServiceImpl extends ServiceImpl<HomeworkMapper, Homework> i
             .orderByDesc(Homework::getUpdatedAt);
 
         return baseMapper.selectPage(new MpPage<>(pageReqVo), wrapper).buildVo(po -> {
-            HomeworkVo vo = MapStructs.INSTANCE.po2vo(po);
-            vo.jointPictureLinks(properties.getUpload().getReturnJointPath());
-            return vo;
+            po.jointPictureLinks(properties.getUpload().getReturnJointPath());
+            return MapStructs.INSTANCE.po2vo(po);
         });
     }
 
@@ -208,10 +207,10 @@ public class HomeworkServiceImpl extends ServiceImpl<HomeworkMapper, Homework> i
         if (workId == null || workId <= 0) return null;
         MpLambdaQueryWrapper<Homework> wrapper = new MpLambdaQueryWrapper<>();
         wrapper.eq(Homework::getId, workId).eq(Homework::getStatus, Constants.Status.WORK_ENABLE);
-        HomeworkVo vo = MapStructs.INSTANCE.po2vo(baseMapper.selectOne(wrapper));
+        Homework po = baseMapper.selectOne(wrapper);
+        po.jointPictureLinks(properties.getUpload().getReturnJointPath());
 
-        vo.jointPictureLinks(properties.getUpload().getReturnJointPath());
-        return vo;
+        return MapStructs.INSTANCE.po2vo(po);
     }
 
     /**
@@ -272,13 +271,17 @@ public class HomeworkServiceImpl extends ServiceImpl<HomeworkMapper, Homework> i
 
         // 第五步：组装 DTO
         resPages.setData(Streams.list2List(studentHomeworks, (sh) -> {
+            StudentHomeworkDetailDto dto = new StudentHomeworkDetailDto();
             Homework po = homeworkMap.get(sh.getHomeworkId());
-            StudentHomeworkDetailDto dto = MapStructs.INSTANCE.po2dto(po);
             if (po == null) {
                 return dto;
             }
+
+            po.jointPictureLinks(properties.getUpload().getReturnJointPath());
+            dto = MapStructs.INSTANCE.po2dto(po);
             dto.setStatus(sh.getStatus());
             dto.setPin(sh.getPin());
+
             return dto;
         }, Objects::nonNull));
 
