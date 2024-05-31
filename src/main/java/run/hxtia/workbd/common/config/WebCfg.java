@@ -33,7 +33,7 @@ public class WebCfg implements WebMvcConfigurer {
             .allowCredentials(true)
             .allowedHeaders("*")
             .exposedHeaders("Content-Type")
-            .allowedMethods("GET", "POST");
+            .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS");
     }
 
     /**

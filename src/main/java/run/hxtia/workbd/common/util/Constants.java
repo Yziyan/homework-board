@@ -12,7 +12,7 @@ public class Constants {
     public static class Users {
         public static final String USER_ID = "user:id:";
         // 超管默认角色
-        public static final String DEFAULT_ROLE = "超级管理员";
+        public static final String DEFAULT_ROLE = "系统管理员";
     }
 
     /**

@@ -38,6 +38,7 @@ import run.hxtia.workbd.service.usermanagement.RoleService;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -270,14 +271,20 @@ public class AdminUserServiceImpl
         AdminUserVo adminUserVo = MapStructs.INSTANCE.po2adminUserVo(adminUsers);
         // 获取用户角色
         List<Role> roles = roleService.listByIds(adminUserRoleService.listRoleIds(userId));
+
+        // 过滤掉 roleId 为 1 的角色
+        roles = roles.stream().filter(role -> !role.getId().equals((short) 1)).collect(Collectors.toList());
+
+
         // TODO：根据上面获取的组织ID，获取组织信息
-//        Organization organization = orgService.getById(adminUsers.getOrgId());
-//        OrganizationVo organizationVo = MapStructs.INSTANCE.po2vo(organization);
+        // Organization organization = orgService.getById(adminUsers.getOrgId());
+        // OrganizationVo organizationVo = MapStructs.INSTANCE.po2vo(organization);
+
         AdminUserInfoDto dto = new AdminUserInfoDto();
         dto.setRoles(roles);
         dto.setUserVo(adminUserVo);
-
         // dto.setOrgVo(organizationVo);
+
         return dto;
     }
 

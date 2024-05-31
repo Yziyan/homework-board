@@ -186,34 +186,54 @@ public class AuthorizationServiceImpl extends ServiceImpl<AuthorizationMapper, A
             JsonVos.raise(CodeMsg.AUTH_CODE_USED);
         }
 
-
         // 从redis中获取code key对应的value
         AuthCourseAndClassIdReqVo reqVo = redises.getT(Constants.Auth.AUTH_CODE + code);
 
         // 课程 和 班级
-        String courseIdsStr = reqVo.getCourseIds();
-        String classIdsStr = reqVo.getClassIds();
+        final String courseIdsStr = reqVo.getCourseIds();
+        final String classIdsStr = reqVo.getClassIds();
+
+        // 判断空字符串并处理
+        final List<Integer> courseIds = new ArrayList<>();
+        final List<Integer> classIds = new ArrayList<>();
+        if (courseIdsStr != null && !courseIdsStr.trim().isEmpty()) {
+            courseIds.addAll(Arrays.stream(courseIdsStr.split(","))
+                .filter(id -> !id.trim().isEmpty())
+                .map(Integer::parseInt)
+                .collect(Collectors.toList()));
+        }
+        if (classIdsStr != null && !classIdsStr.trim().isEmpty()) {
+            classIds.addAll(Arrays.stream(classIdsStr.split(","))
+                .filter(id -> !id.trim().isEmpty())
+                .map(Integer::parseInt)
+                .collect(Collectors.toList()));
+        }
 
         // 学生用户根据 token 获取用户信息
         StudentInfoDto studentInfoDto = studentService.getStudentByToken(token);
         // 从studentInfoDto 中取出学生基本信息
-        String wechatId = studentInfoDto.getStudentVo().getWechatId();
-
-        // 分割课程和班级ID
-        List<Integer> courseIds = Arrays.stream(courseIdsStr.split(",")).map(Integer::parseInt).collect(Collectors.toList());
-        List<Integer> classIds = Arrays.stream(classIdsStr.split(",")).map(Integer::parseInt).collect(Collectors.toList());
+        final String wechatId = studentInfoDto.getStudentVo().getWechatId();
 
         // 获取课程信息
-        List<CourseVo> courseList = courseService.getCoursesByIds(courseIds);
+        final List<CourseVo> courseList = new ArrayList<>();
+        if (!courseIds.isEmpty()) {
+            courseList.addAll(courseService.getCoursesByIds(courseIds));
+        }
 
         // 获取班级信息
-        List<ClassVo> classList = classService.getClassesByIds(classIds);
+        final List<ClassVo> classList = new ArrayList<>();
+        if (!classIds.isEmpty()) {
+            classList.addAll(classService.getClassesByIds(classIds));
+        }
 
         // 获取所有班级的年级ID列表
         List<Integer> gradeIds = classList.stream().map(ClassVo::getGradeId).collect(Collectors.toList());
 
         // 获取年级ID与名称的映射
-        Map<Integer, String> gradeNames = gradeService.getGradeNamesByIds(gradeIds);
+        final Map<Integer, String> gradeNames = new HashMap<>();
+        if (!gradeIds.isEmpty()) {
+            gradeNames.putAll(gradeService.getGradeNamesByIds(gradeIds));
+        }
 
         // 将班级按年级名称分组
         Map<String, List<ClassVo>> gradList = classList.stream()
@@ -258,6 +278,7 @@ public class AuthorizationServiceImpl extends ServiceImpl<AuthorizationMapper, A
 
         return courseAndClassVo;
     }
+
 
     @Override
     public boolean deleteCode(String code) {
