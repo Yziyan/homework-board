@@ -55,6 +55,7 @@ public class WorkBoardProperties implements ApplicationContextAware {
         private String uploadPath;
         private String imagePath;
         private String videoPath;
+        private String returnJointPath;
 
         // 获取图片相对目录
         public String getImageDir() {
@@ -64,6 +65,11 @@ public class WorkBoardProperties implements ApplicationContextAware {
         // 获取视频相对目录
         public String getVideoDir() {
             return uploadPath + videoPath;
+        }
+
+        // 图片映射路径
+        public String getImgMapPath() {
+            return "file:" + basePath + uploadPath + imagePath;
         }
     }
 

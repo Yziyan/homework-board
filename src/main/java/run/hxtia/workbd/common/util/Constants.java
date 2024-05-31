@@ -186,9 +186,8 @@ public class Constants {
         public static final Integer SUPER_ADMIN = 1 ;
     }
 
-    public static class Homework {
-        public static final String IMAGE_BASE_URL = "/home/work-board/upload/image/";
+    public static class SpecialChars {
+        public static final String COMMA = ",";
     }
-
 
 }

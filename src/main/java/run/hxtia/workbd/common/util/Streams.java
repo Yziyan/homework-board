@@ -1,5 +1,6 @@
 package run.hxtia.workbd.common.util;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -57,5 +58,4 @@ public class Streams {
     public static <T, K, V> Map<K, V> list2Map(Collection<T> list, Function<T, K> keyMapper, Function<T, V> valueMapper) {
         return list.stream().collect(Collectors.toMap(keyMapper, valueMapper));
     }
-
 }

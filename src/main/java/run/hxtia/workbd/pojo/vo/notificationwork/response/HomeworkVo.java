@@ -19,7 +19,7 @@ public class HomeworkVo {
     @ApiModelProperty("作业描述")
     private String description;
 
-    @ApiModelProperty("图片链接")
+    @ApiModelProperty("图片链接，多个图片用 「,」拼接")
     private String pictureLinks;
 
     @ApiModelProperty("截止日期")

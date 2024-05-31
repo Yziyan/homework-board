@@ -43,4 +43,11 @@ public class Strings {
         return sb.substring(0, sb.length() - separator.length());
     }
 
+    public static String join(String[] list, String separator) {
+        StringBuilder sb = new StringBuilder();
+        for (Object o : list) {
+            sb.append(o).append(separator);
+        }
+        return sb.substring(0, sb.length() - separator.length());
+    }
 }

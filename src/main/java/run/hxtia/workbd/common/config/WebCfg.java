@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import run.hxtia.workbd.common.filter.ErrorFilter;
 import run.hxtia.workbd.common.prop.WorkBoardProperties;
@@ -50,6 +51,16 @@ public class WebCfg implements WebMvcConfigurer {
         bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
 
         return bean;
+    }
+
+    /**
+     * 静态资源映射
+     */
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // 映射 /upload/image/** 到文件系统中的 /home/work-board/upload/image/
+        registry.addResourceHandler("/upload/image/**")
+            .addResourceLocations(properties.getUpload().getImgMapPath());
     }
 
 }

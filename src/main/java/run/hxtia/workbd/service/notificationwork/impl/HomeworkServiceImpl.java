@@ -15,13 +15,11 @@ import org.thymeleaf.util.ListUtils;
 import run.hxtia.workbd.common.enhance.MpLambdaQueryWrapper;
 import run.hxtia.workbd.common.enhance.MpPage;
 import run.hxtia.workbd.common.mapstruct.MapStructs;
+import run.hxtia.workbd.common.prop.WorkBoardProperties;
 import run.hxtia.workbd.common.redis.Redises;
 import run.hxtia.workbd.common.upload.UploadEditParam;
 import run.hxtia.workbd.common.upload.Uploads;
-import run.hxtia.workbd.common.util.Constants;
-import run.hxtia.workbd.common.util.JsonVos;
-import run.hxtia.workbd.common.util.MiniApps;
-import run.hxtia.workbd.common.util.Streams;
+import run.hxtia.workbd.common.util.*;
 import run.hxtia.workbd.mapper.HomeworkMapper;
 import run.hxtia.workbd.pojo.dto.StudentHomeworkDetailDto;
 import run.hxtia.workbd.pojo.dto.StudentInfoDto;
@@ -57,6 +55,7 @@ public class HomeworkServiceImpl extends ServiceImpl<HomeworkMapper, Homework> i
 
     private final Redises redises;
     private final StudentHomeworkService studentHomeworkService;
+    private final WorkBoardProperties properties;
     private StudentCourseService studentCourseService;
 
     private final StudentAuthorizationService studentAuthorizationService;
@@ -83,23 +82,24 @@ public class HomeworkServiceImpl extends ServiceImpl<HomeworkMapper, Homework> i
             .eq(Homework::getCourseId, pageReqVo.getCourseId())
             .eq(Homework::getPublisherId, pageReqVo.getPublisherId())
             .eq(Homework::getStatus, status)
-            .orderByDesc(Homework::getCreatedAt);
+            .orderByDesc(Homework::getUpdatedAt);
 
-        Page<Homework> page = baseMapper.selectPage(new MpPage<>(pageReqVo), wrapper);
-        List<HomeworkVo> vos = page.getRecords().stream()
-            .map(homework -> {
-                HomeworkVo vo = MapStructs.INSTANCE.po2vo(homework);
-                // 判断是否有图片，如果有则拼接前缀，如果没有则返回空字符串
-                if (homework.getPictureLinks() != null && !homework.getPictureLinks().isEmpty()) {
-                    vo.setPictureLinks(Constants.Homework.IMAGE_BASE_URL + homework.getPictureLinks());
-                } else {
-                    vo.setPictureLinks(""); // 若没有图片链接，则返回空字符串
-                }
+        return baseMapper.selectPage(new MpPage<>(pageReqVo), wrapper).buildVo(po -> {
+            HomeworkVo vo = MapStructs.INSTANCE.po2vo(po);
+            if (!StringUtils.hasLength(vo.getPictureLinks())) {
                 return vo;
-            })
-            .collect(Collectors.toList());
+            }
 
-        return new PageVo<>(page.getTotal(), page.getPages(), page.getCurrent(), page.getSize(), vos);
+            // 说明有图片，每一个都拼接上前缀
+            String[] links = vo.getPictureLinks().split(",");
+
+            for (int i = 0; i < links.length; i++) {
+                links[i] = properties.getUpload().getReturnJointPath() + links[i];
+            }
+
+            vo.setPictureLinks(Strings.join(links, Constants.SpecialChars.COMMA));
+            return vo;
+        });
     }
 
     /**
