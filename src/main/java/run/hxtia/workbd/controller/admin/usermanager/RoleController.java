@@ -10,6 +10,7 @@ import run.hxtia.workbd.common.mapstruct.MapStructs;
 import run.hxtia.workbd.common.util.Constants;
 import run.hxtia.workbd.common.util.JsonVos;
 import run.hxtia.workbd.common.util.Streams;
+import run.hxtia.workbd.common.util.Strings;
 import run.hxtia.workbd.pojo.vo.usermanagement.request.page.RolePageReqVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.request.RoleReqVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.response.RoleVo;
@@ -17,12 +18,14 @@ import run.hxtia.workbd.pojo.vo.common.response.result.CodeMsg;
 import run.hxtia.workbd.pojo.vo.common.response.result.DataJsonVo;
 import run.hxtia.workbd.pojo.vo.common.response.result.JsonVo;
 import run.hxtia.workbd.pojo.vo.common.response.result.PageJsonVo;
+import run.hxtia.workbd.service.usermanagement.AdminUserRoleService;
 import run.hxtia.workbd.service.usermanagement.RoleService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Xiaojin
@@ -36,6 +39,7 @@ import java.util.List;
 public class RoleController {
 
     private final RoleService roleService;
+    private final AdminUserRoleService adminUserRoleService;
 
     @PostMapping("/searchListPage")
     @ApiOperation("角色列表【关键字、分页】")
@@ -76,7 +80,7 @@ public class RoleController {
     @ApiOperation("删除一条或者多条数据【多个ID间用逗号(,)隔开】")
     @RequiresPermissions(Constants.Permission.ROLE_DELETE)
     public JsonVo remove(String ids) {
-        if (roleService.removeByIds(Arrays.asList(ids.split(",")))) {
+        if (roleService.removeRoles(Strings.splitToList(ids, Short.class))) {
             return JsonVos.ok(CodeMsg.REMOVE_OK);
         } else {
             return JsonVos.error(CodeMsg.REMOVE_ERROR);

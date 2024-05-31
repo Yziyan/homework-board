@@ -67,6 +67,7 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper, Not
      * @return ：是否成功
      */
     @Override
+    @Transactional(readOnly = false)
     public boolean saveOrUpdate(NotificationReqVo reqVo) {
         return saveOrUpdate(MapStructs.INSTANCE.reqVo2po(reqVo));
     }
@@ -84,7 +85,7 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper, Not
 
         // 查出所有通知【并且设置删除】
         List<Notification> notifications = Streams.list2List(baseMapper.selectBatchIds(notificationIds), (notification -> {
-            notification.setDel(Constants.Status.NOTIFICATION_STATUS_DEL);
+            notification.setStatus(Constants.Status.NOTIFICATION_STATUS_DEL);
             return notification;
         }));
 
@@ -100,7 +101,7 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper, Not
     public NotificationVo getByNotificationId(Long notificationId) {
         if (notificationId == null || notificationId <= 0) return null;
         MpLambdaQueryWrapper<Notification> wrapper = new MpLambdaQueryWrapper<>();
-        wrapper.eq(Notification::getId, notificationId).eq(Notification::getDel, Constants.Status.NOTIFICATION_STATUS_UNDER);
+        wrapper.eq(Notification::getId, notificationId).eq(Notification::getStatus, Constants.Status.NOTIFICATION_STATUS_UNDER);
         return MapStructs.INSTANCE.po2vo(baseMapper.selectOne(wrapper));
     }
 
@@ -222,7 +223,7 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper, Not
         MpLambdaQueryWrapper<Notification> wrapper = new MpLambdaQueryWrapper<>();
         wrapper.eq(Notification::getNotificationUuid, notificationUuid);
         Notification notification = new Notification();
-        notification.setDel(Constants.Status.NOTIFICATION_STATUS_DEL);  // 设置逻辑删除标志
+        notification.setStatus(Constants.Status.NOTIFICATION_STATUS_DEL);  // 设置逻辑删除标志
         return this.update(notification, wrapper);
     }
 
@@ -231,7 +232,7 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper, Not
     public NotificationVo getByUuid(String notificationUuid) {
         MpLambdaQueryWrapper<Notification> wrapper = new MpLambdaQueryWrapper<>();
         wrapper.eq(Notification::getNotificationUuid, notificationUuid)
-            .eq(Notification::getDel, 0); // 仅查询未删除的记录
+            .eq(Notification::getStatus, Constants.Status.NOTIFICATION_STATUS_UNDER); // 仅查询未删除的记录
 
         Notification notification = this.getOne(wrapper);
         return MapStructs.INSTANCE.po2vo(notification);
@@ -246,7 +247,7 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper, Not
         if (CollectionUtils.isEmpty(workIds)) return;
         List<Notification> notifications = listByIds(workIds);
         for (Notification notification : notifications) {
-            if (Constants.Status.NOTIFICATION_STATUS_UNDER.equals(notification.getDel())) {
+            if (Constants.Status.NOTIFICATION_STATUS_UNDER.equals(notification.getStatus())) {
                 JsonVos.raise(CodeMsg.WRONG_WORK_NO_REMOVE);
             }
         }

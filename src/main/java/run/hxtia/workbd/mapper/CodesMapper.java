@@ -15,10 +15,10 @@ import java.util.List;
 public interface CodesMapper extends BaseMapper<Codes> {
     @Select("SELECT c.code, c.created_at, c.status, co.name AS course_name, cl.name AS class_name, gr.name AS grade_name, col.name AS college_name " +
         "FROM codes c " +
-        "JOIN courses co ON c.course_id = co.id " +
-        "JOIN classes cl ON c.class_id = cl.id " +
-        "JOIN grades gr ON cl.grade_id = gr.id " +
-        "JOIN colleges col ON gr.college_id = col.id " +
+        "LEFT JOIN courses co ON c.course_id = co.id " +
+        "LEFT JOIN classes cl ON c.class_id = cl.id " +
+        "LEFT JOIN grades gr ON cl.grade_id = gr.id " +
+        "LEFT JOIN colleges col ON gr.college_id = col.id " +
         "WHERE c.publish_id = #{userId}")
     List<CodeAndCourseAndClassInfoVo> getCodeListByUserId(@Param("userId") Integer userId);
 }

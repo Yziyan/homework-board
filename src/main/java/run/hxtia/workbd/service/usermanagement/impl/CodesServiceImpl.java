@@ -63,7 +63,6 @@ public class CodesServiceImpl  extends ServiceImpl<CodesMapper, Codes> implement
     @Override
     public List<CodeAndCourseAndClassInfoVo> getCodelistByUserId(String token) {
         // 根据token获取用户id
-
         // 从 Redis 中获取用户权限信息
         AdminUserPermissionDto userPermissionDto = redises.getT(Constants.Web.ADMIN_PREFIX + token);
 
@@ -72,7 +71,25 @@ public class CodesServiceImpl  extends ServiceImpl<CodesMapper, Codes> implement
         Integer userId = Math.toIntExact(users.getId());
 
         // 从数据库获取用户的授权码和相关信息
-        return baseMapper.getCodeListByUserId(userId);
+        List<CodeAndCourseAndClassInfoVo> codeList = baseMapper.getCodeListByUserId(userId);
+
+        // 处理返回结果，确保没有course_id或class_id的情况也能正确返回
+        for (CodeAndCourseAndClassInfoVo codeInfo : codeList) {
+            if (codeInfo.getCourseName() == null) {
+                codeInfo.setCourseName(""); // 或者设置为一个合适的默认值
+            }
+            if (codeInfo.getClassName() == null) {
+                codeInfo.setClassName(""); // 或者设置为一个合适的默认值
+            }
+            if (codeInfo.getGradeName() == null) {
+                codeInfo.setGradeName(""); // 或者设置为一个合适的默认值
+            }
+            if (codeInfo.getCollegeName() == null) {
+                codeInfo.setCollegeName(""); // 或者设置为一个合适的默认值
+            }
+        }
+
+        return codeList;
     }
 
     @Override

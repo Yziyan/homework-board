@@ -54,7 +54,7 @@ public class Notification implements Serializable {
     private Date updatedAt;
 
     /**
-     * 是否删除
+     * 通知状态状态「0：不启用，1：启用」
      */
-    private Boolean Del;
+    private Boolean status;
 }

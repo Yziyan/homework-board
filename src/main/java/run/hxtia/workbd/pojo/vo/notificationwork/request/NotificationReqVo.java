@@ -14,8 +14,8 @@ public class NotificationReqVo {
     private String notification_id;
 
     @NotNull
-    @ApiModelProperty(value = "发布状态", required = true)
-    private String status;
+    @ApiModelProperty(value = "发布状态「0：不启用，1：启用」", required = true)
+    private Boolean status;
 
     @NotNull
     @ApiModelProperty(value = "通知标题", required = true)

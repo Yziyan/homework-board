@@ -80,8 +80,8 @@ public class Constants {
         // 通知
         public static final String NOTIFICATION_STATUS_CLASS = "1"; // 班级
         public static final String NOTIFICATION_STATUS_USER = "2"; // 学生
-        public static final Boolean NOTIFICATION_STATUS_UNDER = false; // 未删除
-        public static final Boolean NOTIFICATION_STATUS_DEL = true; // 删除
+        public static final Boolean NOTIFICATION_STATUS_UNDER = true; // 启用
+        public static final Boolean NOTIFICATION_STATUS_DEL = false; // 未启用
 
         // 学生通知
         public static final Boolean STUDENT_NOTIFICATION_STATUS_UNREAD = false; // 未读
