@@ -3,15 +3,12 @@ package run.hxtia.workbd.service.notificationwork;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.transaction.annotation.Transactional;
 import run.hxtia.workbd.pojo.po.Notification;
-import run.hxtia.workbd.pojo.vo.notificationwork.request.HomeworkReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.request.NotificationPublishReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.request.NotifyReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.request.page.NotificationPageReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.request.NotificationReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.response.NotificationVo;
 import run.hxtia.workbd.pojo.vo.common.response.result.PageVo;
-
-import java.util.List;
 
 /**
  * @author Xiaojin
@@ -25,11 +22,11 @@ public interface NotificationService extends IService<Notification> {
 
     /**
      * 分页查询通知
-     * @param pageReqVo：分页信息
-     * @param type：通知类型
+     *
+     * @param pageReqVo ：分页信息
      * @return 分页后的数据
      */
-    PageVo<NotificationVo> listPage(NotificationPageReqVo pageReqVo, String type);
+    PageVo<NotificationVo> listPage(NotificationPageReqVo pageReqVo);
 
     /**
      * 保存 or 编辑通知

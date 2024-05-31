@@ -29,12 +29,14 @@ import run.hxtia.workbd.pojo.vo.notificationwork.request.page.CourseIdWorkPageRe
 import run.hxtia.workbd.pojo.vo.notificationwork.request.page.HomeworkPageReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.request.HomeworkReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.request.HomeworkUploadReqVo;
+import run.hxtia.workbd.pojo.vo.notificationwork.response.CourseVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.response.HomeworkVo;
 import run.hxtia.workbd.pojo.vo.common.response.result.ExtendedPageVo;
 import run.hxtia.workbd.pojo.vo.common.response.result.CodeMsg;
 import run.hxtia.workbd.pojo.vo.common.response.result.PageVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.response.StudentAuthorizationSetVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.request.page.StudentWorkPageReqVo;
+import run.hxtia.workbd.service.notificationwork.CourseService;
 import run.hxtia.workbd.service.notificationwork.HomeworkService;
 import run.hxtia.workbd.service.notificationwork.StudentCourseService;
 import run.hxtia.workbd.service.notificationwork.StudentHomeworkService;
@@ -59,6 +61,7 @@ public class HomeworkServiceImpl extends ServiceImpl<HomeworkMapper, Homework> i
     private StudentCourseService studentCourseService;
 
     private final StudentAuthorizationService studentAuthorizationService;
+    private final CourseService courseService;
 
     @Autowired
     public void setStudentCourseService(@Lazy StudentCourseService studentCourseService) {
@@ -79,8 +82,8 @@ public class HomeworkServiceImpl extends ServiceImpl<HomeworkMapper, Homework> i
         wrapper.like(pageReqVo.getKeyword(), Homework::getTitle, Homework::getDescription, Homework::getPublishPlatform)
             .between(pageReqVo.getCreatedTime(), Homework::getCreatedAt)
             .between(pageReqVo.getDeadline(), Homework::getUpdatedAt)
-            .eq(Homework::getCourseId, pageReqVo.getCourseId())
-            .eq(Homework::getPublisherId, pageReqVo.getPublisherId())
+            .eq(pageReqVo.getCourseId() != null, Homework::getCourseId, pageReqVo.getCourseId())
+            .eq(pageReqVo.getPublisherId() != null, Homework::getPublisherId, pageReqVo.getPublisherId())
             .eq(Homework::getStatus, status)
             .orderByDesc(Homework::getUpdatedAt);
 

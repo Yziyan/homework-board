@@ -31,7 +31,7 @@ public class NotificationController {
     @ApiOperation(value = "分页查询通知")
     @RequiresPermissions(Constants.Permission.NOTICE_READ)
     public PageJsonVo<NotificationVo> list(@RequestBody NotificationPageReqVo pageReqVo) {
-        return JsonVos.ok(notificationService.listPage(pageReqVo, pageReqVo.getType()));
+        return JsonVos.ok(notificationService.listPage(pageReqVo));
     }
 
     @PostMapping("/saveOrUpdate")

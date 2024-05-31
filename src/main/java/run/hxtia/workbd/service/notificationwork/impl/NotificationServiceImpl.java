@@ -44,17 +44,16 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper, Not
 
     /**
      * 分页查询通知
-     * @param pageReqVo：分页信息
-     * @param type：通知类型·
+     *
+     * @param pageReqVo ：分页信息
      * @return 分页后的数据
      */
     @Override
-    public PageVo<NotificationVo> listPage(NotificationPageReqVo pageReqVo, String type) {
+    public PageVo<NotificationVo> listPage(NotificationPageReqVo pageReqVo) {
         // 构建查询条件
         MpLambdaQueryWrapper<Notification> queryWrapper = new MpLambdaQueryWrapper<>();
         queryWrapper.like(pageReqVo.getKeyword(), Notification::getTitle, Notification::getContent)
-            .between(pageReqVo.getCreatedTime(), Notification::getCreatedAt)
-            .eq(Notification::getCategory, type);
+            .between(pageReqVo.getCreatedTime(), Notification::getCreatedAt);
 
         // 返回分页结果
         return baseMapper.selectPage(new MpPage<>(pageReqVo), queryWrapper)

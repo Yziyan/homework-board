@@ -37,6 +37,9 @@ public class HomeworkVo {
     @ApiModelProperty("课程ID")
     private Integer courseId;
 
+    @ApiModelProperty("课程名称")
+    private String courseName;
+
     @ApiModelProperty("发布者ID")
     private String publisherId;
 
