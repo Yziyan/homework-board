@@ -77,7 +77,7 @@ public class HomeworkServiceImpl extends ServiceImpl<HomeworkMapper, Homework> i
      */
     @Override
     public PageVo<HomeworkVo> list(HomeworkPageReqVo pageReqVo, Short status) {
-        // 构建分页sql
+        // 构建分页查询条件
         MpLambdaQueryWrapper<Homework> wrapper = new MpLambdaQueryWrapper<>();
         wrapper.like(pageReqVo.getKeyword(), Homework::getTitle, Homework::getDescription, Homework::getPublishPlatform)
             .between(pageReqVo.getCreatedTime(), Homework::getCreatedAt)
@@ -87,11 +87,49 @@ public class HomeworkServiceImpl extends ServiceImpl<HomeworkMapper, Homework> i
             .eq(Homework::getStatus, status)
             .orderByDesc(Homework::getUpdatedAt);
 
-        return baseMapper.selectPage(new MpPage<>(pageReqVo), wrapper).buildVo(po -> {
+        // 获取分页数据
+        MpPage<Homework> page = new MpPage<>(pageReqVo);
+        Page<Homework> pageResult = baseMapper.selectPage(page, wrapper);
+
+        List<Homework> homeworks = pageResult.getRecords();
+
+        PageVo<HomeworkVo> resPages = new PageVo<>();
+        resPages.setCount(pageResult.getTotal());
+        resPages.setPages(pageResult.getPages());
+        resPages.setCurrentPage(pageResult.getCurrent());
+        resPages.setPageSize(pageResult.getSize());
+
+        if (homeworks.isEmpty()) {
+            resPages.setData(Collections.emptyList());
+            return resPages;
+        }
+
+        // 获取所有课程ID
+        List<Integer> courseIds = Streams.list2List(homeworks, Homework::getCourseId).stream().distinct().collect(Collectors.toList());
+
+        // 批量查询课程信息
+        List<CourseVo> courseList = courseService.getCoursesByIds(courseIds);
+        Map<Integer, CourseVo> courseMap = Streams.list2Map(courseList, CourseVo::getId, Function.identity());
+
+        // 组装返回的 HomeworkVo 列表
+        List<HomeworkVo> homeworkVos = Streams.list2List(homeworks, po -> {
+            HomeworkVo vo = MapStructs.INSTANCE.po2vo(po);
+            // 映射和设置图片链接
             po.jointPictureLinks(properties.getUpload().getReturnJointPath());
-            return MapStructs.INSTANCE.po2vo(po);
+
+            // 设置课程名称
+            CourseVo courseVo = courseMap.get(po.getCourseId());
+            if (courseVo != null) {
+                vo.setCourseName(courseVo.getName());
+            }
+
+            return vo;
         });
+
+        resPages.setData(homeworkVos);
+        return resPages;
     }
+
 
     /**
      * 从微信：保存 or 编辑作业
