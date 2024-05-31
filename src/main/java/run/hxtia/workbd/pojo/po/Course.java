@@ -1,5 +1,6 @@
 package run.hxtia.workbd.pojo.po;
 
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
@@ -20,6 +21,7 @@ public class Course implements Serializable {
     /**
      * 课程ID
      */
+    @TableId
     private Integer id;
 
     /**

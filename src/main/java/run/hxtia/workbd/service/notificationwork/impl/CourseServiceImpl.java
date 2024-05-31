@@ -1,8 +1,6 @@
 package run.hxtia.workbd.service.notificationwork.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,10 +11,9 @@ import run.hxtia.workbd.common.enhance.MpPage;
 import run.hxtia.workbd.common.mapstruct.MapStructs;
 import run.hxtia.workbd.common.redis.Redises;
 import run.hxtia.workbd.common.util.JsonVos;
+import run.hxtia.workbd.common.util.Streams;
 import run.hxtia.workbd.mapper.CourseMapper;
 import run.hxtia.workbd.pojo.po.Course;
-import run.hxtia.workbd.pojo.po.Role;
-import run.hxtia.workbd.pojo.vo.notificationwork.request.CourseEditReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.request.CourseReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.request.page.CoursePageReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.response.CourseVo;
@@ -38,37 +35,25 @@ import java.util.stream.Collectors;
 public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> implements CourseService {
     private final StudentCourseService studentCourseService;
 
-
     @Override
-    @Transactional(readOnly = false)
     public boolean save(CourseReqVo reqVo) {
+        Integer clgId = Redises.getClgIdByToken(reqVo.getToken());
+
+        MpLambdaQueryWrapper<Course> wrapper = new MpLambdaQueryWrapper<>();
+        wrapper.eq(Course::getName, reqVo.getName()).eq(Course::getCollegeId, clgId);
+
         // 检查课程名称是否已经存在
-        boolean exists = lambdaQuery().eq(Course::getName, reqVo.getName()).eq(Course::getCollegeId, reqVo.getCollegeId()).one() != null;
-        if (exists) {
+        if (baseMapper.exists(wrapper)) {
             // 如果课程名称已经存在，那么返回false，表示保存操作失败
-            return false;
+            JsonVos.raise("课程已存在, CourseName = " + reqVo.getName());
         }
 
         // 如果课程名称不存在，那么创建新的课程
         Course course = MapStructs.INSTANCE.reqVo2po(reqVo);
         // 使用save方法保存Course对象到数据库
-        return save(course);
+        return saveOrUpdate(course);
     }
 
-    @Override
-    @Transactional(readOnly = false)
-    public boolean update(CourseEditReqVo reqVo) {
-        // 检查在同一个学院下是否已经存在相同的课程名称
-        boolean exists = lambdaQuery().eq(Course::getName, reqVo.getName()).eq(Course::getCollegeId, reqVo.getCollegeId()).one() != null;
-        if (exists) {
-            // 如果存在，那么返回false，表示更新操作失败
-            return false;
-        }
-
-        // 如果不存在，那么更新课程信息
-        Course course = MapStructs.INSTANCE.reqVo2po(reqVo);
-        return updateById(course);
-    }
 
     @Override
     @Transactional(readOnly = false)
@@ -79,19 +64,13 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
     }
 
     @Override
-    public CourseVo getCourseInfoById(Integer courseId) {
-        // 使用getById方法从数据库中获取Course对象
-        Course course = getById(courseId);
-        // 将Course对象转换为CourseVo对象
-        return MapStructs.INSTANCE.po2vo(course);
-    }
+    public PageVo<CourseVo> getList(String token) {
+        MpLambdaQueryWrapper<Course> wrapper = new MpLambdaQueryWrapper<>();
+        wrapper.eq(Course::getCollegeId, Redises.getClgIdByToken(token));
 
-    @Override
-    public PageVo<CourseVo> getList() {
         // 使用list方法从数据库中获取所有的Course对象
-        List<Course> courses = list();
         // 将Course对象列表转换为CourseVo对象列表
-        List<CourseVo> courseVos = courses.stream().map(MapStructs.INSTANCE::po2vo).collect(Collectors.toList());
+        List<CourseVo> courseVos = Streams.list2List(list(wrapper), MapStructs.INSTANCE::po2vo);
         // 创建并返回分页结果
         PageVo<CourseVo> result = new PageVo<>();
         result.setCount((long) courseVos.size());
@@ -131,7 +110,18 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
     }
 
     @Override
+    public PageVo<CourseVo> getPageByToken(CoursePageReqVo pageReqVo) {
+        pageReqVo.setCollegeId(Redises.getClgIdByToken(pageReqVo.getToken()));
+        // 构建查询条件
+        return getPage(pageReqVo);
+    }
+
+    @Override
     public PageVo<CourseVo> getPage(CoursePageReqVo pageReqVo) {
+        if (pageReqVo.getCollegeId() <= 0) {
+            JsonVos.raise(CodeMsg.NO_ORG_INFO);
+        }
+
         // 构建查询条件
         MpLambdaQueryWrapper<Course> wrapper = new MpLambdaQueryWrapper<>();
         wrapper.like(pageReqVo.getKeyword(), Course::getName, Course::getDescription).

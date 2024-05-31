@@ -1,5 +1,6 @@
 package run.hxtia.workbd.pojo.vo.notificationwork.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -14,6 +15,9 @@ import javax.validation.constraints.NotBlank;
 @ApiModel("【保存】课程实体")
 public class CourseReqVo {
 
+    @ApiModelProperty(value = "课程 Id, 传递就是编辑课程信息")
+    private String id;
+
     @NotBlank
     @ApiModelProperty(value = "课程名", required = true)
     private String name;
@@ -24,7 +28,6 @@ public class CourseReqVo {
     @ApiModelProperty(value = "课程教师id", required = true)
     private Integer teacherId;
 
-    @ApiModelProperty(value = "课程所属学院id", required = true)
-    private Integer collegeId;
-
+    @JsonIgnore
+    private String token;
 }

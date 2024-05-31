@@ -52,7 +52,7 @@ public class  AuthController {
     @PostMapping("/generateCode")
     @ApiOperation("通过课程id和班级id，生成授权码")
     @RequiresPermissions(Constants.Permission.AUTHORIZE_CREATE)
-    public DataJsonVo<String> generateCode(@Valid @RequestBody AuthCourseAndClassIdReqVo reqVo,HttpServletRequest request) {
+    public DataJsonVo<String> generateCode(@Valid @RequestBody AuthCourseAndClassIdReqVo reqVo, HttpServletRequest request) {
         return JsonVos.ok(authorizationService.generateSelectionCode(reqVo,request.getHeader(Constants.Web.HEADER_TOKEN)),"授权码Code生成成功");
     }
 

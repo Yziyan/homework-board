@@ -10,6 +10,7 @@ import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import run.hxtia.workbd.common.mapstruct.MapStructs;
 import run.hxtia.workbd.common.util.Constants;
 import run.hxtia.workbd.common.util.JsonVos;
 import run.hxtia.workbd.pojo.vo.common.response.result.*;
@@ -22,6 +23,7 @@ import run.hxtia.workbd.pojo.vo.usermanagement.request.page.StudentCoursePageReq
 import run.hxtia.workbd.service.notificationwork.CourseService;
 import run.hxtia.workbd.service.notificationwork.StudentCourseService;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 /**
@@ -41,7 +43,8 @@ public class CourseController  {
     @PostMapping("/create")
     @ApiOperation("创建课程")
     @RequiresPermissions(Constants.Permission.COURSE_CREATE)
-    public JsonVo create(@Valid @RequestBody CourseReqVo reqVo) {
+    public JsonVo create(@Valid @RequestBody CourseReqVo reqVo, HttpServletRequest request) {
+        reqVo.setToken(request.getHeader(Constants.Web.HEADER_TOKEN));
         if (courseService.save(reqVo)) {
             return JsonVos.ok(CodeMsg.SAVE_OK);
         } else {
@@ -52,27 +55,22 @@ public class CourseController  {
     @PostMapping("/edit")
     @ApiOperation("编辑课程")
     @RequiresPermissions(Constants.Permission.COURSE_UPDATE)
-    public JsonVo edit(@Valid @RequestBody CourseEditReqVo reqVo) {
-        if (courseService.update(reqVo)) {
-            return JsonVos.ok(CodeMsg.SAVE_OK);
-        } else {
-            return JsonVos.error(CodeMsg.SAVE_ERROR);
-        }
+    public JsonVo edit(@Valid @RequestBody CourseReqVo reqVo, HttpServletRequest request) {
+        return create(reqVo, request);
     }
 
     @GetMapping("/{courseId}")
     @ApiOperation("根据ID获取课程信息")
     @RequiresPermissions(Constants.Permission.COURSE_READ)
     public DataJsonVo<CourseVo> getCourseInfoById(@PathVariable Integer courseId) {
-        return JsonVos.ok(courseService.getCourseInfoById(courseId));
+        return JsonVos.ok(MapStructs.INSTANCE.po2vo(courseService.getById(courseId)));
     }
 
     @GetMapping("/list")
     @ApiOperation("获取所有课程列表")
-    // TODO：这个接口暂时用不到，到时候再修改返回值。
     @RequiresPermissions(Constants.Permission.COURSE_READ)
-    public PageJsonVo<CourseVo> getList() {
-        return JsonVos.ok(courseService.getList());
+    public PageJsonVo<CourseVo> getList(HttpServletRequest request) {
+        return JsonVos.ok(courseService.getList(request.getHeader(Constants.Web.HEADER_TOKEN)));
     }
 
     @DeleteMapping("/remove")
@@ -94,11 +92,12 @@ public class CourseController  {
         }
     }
 
-    @PostMapping("/college/page")
+    @PostMapping("/getPage")
     @ApiOperation("根据学院ID分页获取课程信息")
     @RequiresPermissions(Constants.Permission.COURSE_READ)
-    public PageJsonVo<CourseVo> getCourseInfoByCollegeIdWithPagination(@Valid @RequestBody CoursePageReqVo reqVo) {
-        return JsonVos.ok(courseService.getPage(reqVo));
+    public PageJsonVo<CourseVo> getCourseInfoByCollegeIdWithPagination(@Valid @RequestBody CoursePageReqVo reqVo, HttpServletRequest request) {
+        reqVo.setToken(request.getHeader(Constants.Web.HEADER_TOKEN));
+        return JsonVos.ok(courseService.getPageByToken(reqVo));
     }
 
 

@@ -27,14 +27,6 @@ public interface CourseService extends IService<Course> {
     boolean save(CourseReqVo reqVo);
 
     /**
-     * 更新课程信息
-     * @param reqVo ：课程信息
-     * @return ：是否成功
-     */
-    @Transactional(readOnly = false)
-    boolean update(CourseEditReqVo reqVo);
-
-    /**
      * 删除课程
      * @param courseId ：课程ID
      * @return ：是否成功
@@ -42,18 +34,12 @@ public interface CourseService extends IService<Course> {
     @Transactional(readOnly = false)
     boolean delete(Integer courseId);
 
-    /**
-     * 获取课程信息
-     * @param courseId:课程id
-     * @return 课程信息
-     */
-    CourseVo getCourseInfoById(Integer courseId);
 
     /**
      * 获取所有课程信息
      * @return 所有课程信息
      */
-    PageVo<CourseVo> getList();
+    PageVo<CourseVo> getList(String token);
 
     /**
      * 检查课程是否存在。
@@ -77,6 +63,8 @@ public interface CourseService extends IService<Course> {
      */
     @Transactional(readOnly = false)
     boolean removeHistory(String ids);
+
+    PageVo<CourseVo> getPageByToken(CoursePageReqVo pageReqVo);
 
     /**
      * 根据学院ID分页获取课程信息
