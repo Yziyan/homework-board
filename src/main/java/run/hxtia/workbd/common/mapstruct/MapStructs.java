@@ -72,7 +72,14 @@ public interface MapStructs {
     HomeworkVo po2vo(Homework po);
 
     // 通知
-    @Mapping(source = "notificationUuid", target = "notificationUuid")
+    @Mapping(
+        source = "notificationUuid",
+        target = "notificationUuid"
+    )
+    @Mapping(
+        source = "id",
+        target = "id"
+    )
     NotificationVo po2vo(Notification po);
     NotificationVo po2vo(StudentNotification studentNotification);
     StudentCodeVo po2vo(StudentCode studentCode);

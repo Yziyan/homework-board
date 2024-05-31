@@ -312,14 +312,13 @@ public class HomeworkServiceImpl extends ServiceImpl<HomeworkMapper, Homework> i
 
         // 第五步：组装 DTO
         resPages.setData(Streams.list2List(studentHomeworks, (sh) -> {
-            StudentHomeworkDetailDto dto = new StudentHomeworkDetailDto();
             Homework po = homeworkMap.get(sh.getHomeworkId());
             if (po == null) {
-                return dto;
+                return null;
             }
 
             po.jointPictureLinks(properties.getUpload().getReturnJointPath());
-            dto = MapStructs.INSTANCE.po2dto(po);
+            StudentHomeworkDetailDto dto = MapStructs.INSTANCE.po2dto(po);
             dto.setStatus(sh.getStatus());
             dto.setPin(sh.getPin());
 

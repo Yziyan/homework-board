@@ -1,15 +1,15 @@
 package run.hxtia.workbd.service.usermanagement.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.HmacAlgorithms;
 import org.apache.commons.codec.digest.HmacUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import org.thymeleaf.util.ListUtils;
 import run.hxtia.workbd.common.enhance.MpLambdaQueryWrapper;
+import run.hxtia.workbd.common.enhance.MpPage;
 import run.hxtia.workbd.common.httpclient.HttpClient;
 import run.hxtia.workbd.common.mapstruct.MapStructs;
 import run.hxtia.workbd.common.redis.Redises;
@@ -18,18 +18,17 @@ import run.hxtia.workbd.common.upload.Uploads;
 import run.hxtia.workbd.common.util.*;
 import run.hxtia.workbd.mapper.StudentMapper;
 import run.hxtia.workbd.pojo.dto.StudentInfoDto;
+import run.hxtia.workbd.pojo.po.AdminUsers;
 import run.hxtia.workbd.pojo.po.Student;
-import run.hxtia.workbd.pojo.po.StudentCourse;
-import run.hxtia.workbd.pojo.po.StudentHomework;
+import run.hxtia.workbd.pojo.vo.common.response.result.PageVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.response.StudentVo;
-import run.hxtia.workbd.pojo.vo.organization.response.OrganizationVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.request.StudentAvatarReqVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.request.StudentReqVo;
 import run.hxtia.workbd.pojo.vo.common.response.WxAccessTokenVo;
 import run.hxtia.workbd.pojo.vo.common.response.WxCodeMsg;
 import run.hxtia.workbd.pojo.vo.common.response.WxTokenVo;
 import run.hxtia.workbd.pojo.vo.common.response.result.CodeMsg;
-import run.hxtia.workbd.service.notificationwork.CourseService;
+import run.hxtia.workbd.pojo.vo.usermanagement.request.page.StudentPageReqVo;
 import run.hxtia.workbd.service.notificationwork.HomeworkService;
 import run.hxtia.workbd.service.notificationwork.StudentCourseService;
 import run.hxtia.workbd.service.notificationwork.StudentHomeworkService;
@@ -266,6 +265,20 @@ public class StudentServiceImpl extends ServiceImpl<StudentMapper, Student> impl
             .map(MapStructs.INSTANCE::po2vo)
             .collect(Collectors.toList());
     }
+
+    @Override
+    public PageVo<StudentVo> getStudentsByCollegeId(StudentPageReqVo reqVo) {
+
+        // 构建分页查询条件
+        MpLambdaQueryWrapper<Student> wrapper = new MpLambdaQueryWrapper<>();
+        wrapper.like(reqVo.getKeyword(), Student::getNickname).
+            eq(Student::getCollegeId, Redises.getClgIdByToken(reqVo.getToken()));
+
+        return baseMapper.
+            selectPage(new MpPage<>(reqVo), wrapper).
+            buildVo(MapStructs.INSTANCE::po2vo);
+   }
+
 
     /**
      * 根据 wxTokenVo 构建验证登录状态的 URL

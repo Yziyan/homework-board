@@ -1,8 +1,6 @@
 package run.hxtia.workbd.service.notificationwork.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -12,16 +10,20 @@ import run.hxtia.workbd.common.enhance.MpLambdaQueryWrapper;
 import run.hxtia.workbd.common.enhance.MpPage;
 import run.hxtia.workbd.common.mapstruct.MapStructs;
 import run.hxtia.workbd.common.redis.Redises;
+import run.hxtia.workbd.common.util.Constants;
 import run.hxtia.workbd.common.util.JsonVos;
 import run.hxtia.workbd.mapper.CourseMapper;
+import run.hxtia.workbd.pojo.dto.AdminUserPermissionDto;
+import run.hxtia.workbd.pojo.po.AdminUsers;
 import run.hxtia.workbd.pojo.po.Course;
-import run.hxtia.workbd.pojo.po.Role;
+import run.hxtia.workbd.pojo.vo.common.request.page.PageReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.request.CourseEditReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.request.CourseReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.request.page.CoursePageReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.response.CourseVo;
 import run.hxtia.workbd.pojo.vo.common.response.result.CodeMsg;
 import run.hxtia.workbd.pojo.vo.common.response.result.PageVo;
+import run.hxtia.workbd.pojo.vo.notificationwork.response.StudentVo;
 import run.hxtia.workbd.service.notificationwork.CourseService;
 import run.hxtia.workbd.service.notificationwork.StudentCourseService;
 
