@@ -5,10 +5,11 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.transaction.annotation.Transactional;
 import run.hxtia.workbd.pojo.dto.StudentInfoDto;
 import run.hxtia.workbd.pojo.po.Student;
+import run.hxtia.workbd.pojo.vo.common.response.result.PageVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.response.StudentVo;
-import run.hxtia.workbd.pojo.vo.organization.response.OrganizationVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.request.StudentAvatarReqVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.request.StudentReqVo;
+import run.hxtia.workbd.pojo.vo.usermanagement.request.page.StudentPageReqVo;
 
 import java.util.List;
 import java.util.Set;
@@ -74,5 +75,16 @@ public interface StudentService extends IService<Student> {
      * @return ：学生信息
      */
     List<StudentVo> getStudentsByStudentIds(List<String> studentIds);
+
+    /**
+     * 根据学院ID分页获取学生信息
+     *
+     * @param reqVo@return 分页后的学生信息列表
+     */
+    PageVo<StudentVo> getStudentsByCollegeId(StudentPageReqVo reqVo);
+
+    /**
+     * 根据学生id获取学生详细信息
+     */
 
 }

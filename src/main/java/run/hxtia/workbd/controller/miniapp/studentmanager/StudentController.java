@@ -26,7 +26,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
-@RestController
+@RestController("miniappStudentController")
 @RequestMapping("/wx/studentManager/student")
 @RequiredArgsConstructor
 @Api(tags = "WxUserController")
