@@ -3,6 +3,9 @@ package run.hxtia.workbd.pojo.vo.notificationwork.response;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.springframework.util.StringUtils;
+import run.hxtia.workbd.common.util.Constants;
+import run.hxtia.workbd.common.util.Strings;
 
 import java.util.Date;
 
@@ -44,5 +47,19 @@ public class HomeworkVo {
     private Short status;
 
 
+    public void jointPictureLinks(String joint) {
+        if (!StringUtils.hasLength(pictureLinks)) {
+            return;
+        }
+
+        // 说明有图片，每一个都拼接上前缀
+        String[] links = pictureLinks.split(Constants.SpecialChars.COMMA);
+
+        for (int i = 0; i < links.length; i++) {
+            links[i] =  joint + links[i];
+        }
+
+        pictureLinks = Strings.join(links, Constants.SpecialChars.COMMA);
+    }
 }
 

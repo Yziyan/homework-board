@@ -86,18 +86,7 @@ public class HomeworkServiceImpl extends ServiceImpl<HomeworkMapper, Homework> i
 
         return baseMapper.selectPage(new MpPage<>(pageReqVo), wrapper).buildVo(po -> {
             HomeworkVo vo = MapStructs.INSTANCE.po2vo(po);
-            if (!StringUtils.hasLength(vo.getPictureLinks())) {
-                return vo;
-            }
-
-            // 说明有图片，每一个都拼接上前缀
-            String[] links = vo.getPictureLinks().split(",");
-
-            for (int i = 0; i < links.length; i++) {
-                links[i] = properties.getUpload().getReturnJointPath() + links[i];
-            }
-
-            vo.setPictureLinks(Strings.join(links, Constants.SpecialChars.COMMA));
+            vo.jointPictureLinks(properties.getUpload().getReturnJointPath());
             return vo;
         });
     }
@@ -219,7 +208,10 @@ public class HomeworkServiceImpl extends ServiceImpl<HomeworkMapper, Homework> i
         if (workId == null || workId <= 0) return null;
         MpLambdaQueryWrapper<Homework> wrapper = new MpLambdaQueryWrapper<>();
         wrapper.eq(Homework::getId, workId).eq(Homework::getStatus, Constants.Status.WORK_ENABLE);
-        return MapStructs.INSTANCE.po2vo(baseMapper.selectOne(wrapper));
+        HomeworkVo vo = MapStructs.INSTANCE.po2vo(baseMapper.selectOne(wrapper));
+
+        vo.jointPictureLinks(properties.getUpload().getReturnJointPath());
+        return vo;
     }
 
     /**
