@@ -38,6 +38,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
     @Override
     public boolean save(CourseReqVo reqVo) {
         Integer clgId = Redises.getClgIdByToken(reqVo.getToken());
+        reqVo.setCollegeId(clgId);
 
         MpLambdaQueryWrapper<Course> wrapper = new MpLambdaQueryWrapper<>();
         wrapper.eq(Course::getName, reqVo.getName()).eq(Course::getCollegeId, clgId);

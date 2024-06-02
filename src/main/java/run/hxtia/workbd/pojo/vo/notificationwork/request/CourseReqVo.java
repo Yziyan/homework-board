@@ -16,7 +16,7 @@ import javax.validation.constraints.NotBlank;
 public class CourseReqVo {
 
     @ApiModelProperty(value = "课程 Id, 传递就是编辑课程信息")
-    private String id;
+    private Integer id;
 
     @NotBlank
     @ApiModelProperty(value = "课程名", required = true)
@@ -27,6 +27,9 @@ public class CourseReqVo {
 
     @ApiModelProperty(value = "课程教师id", required = true)
     private Integer teacherId;
+
+
+    private Integer collegeId;
 
     @JsonIgnore
     private String token;

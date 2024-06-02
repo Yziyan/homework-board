@@ -18,6 +18,7 @@ import run.hxtia.workbd.pojo.vo.organization.request.page.ClassPageReqVo;
 import run.hxtia.workbd.pojo.vo.organization.response.ClassVo;
 import run.hxtia.workbd.service.organization.ClassService;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.function.Function;
 
@@ -71,8 +72,8 @@ public class ClassController extends BaseController<Classes, ClassReqVo> {
     @GetMapping("/list")
     @ApiOperation("获取所有班级列表")
     @RequiresPermissions(Constants.Permission.CLASS_READ)
-    public PageJsonVo<ClassVo> getList() {
-        return JsonVos.ok(classService.getList());
+    public PageJsonVo<ClassVo> getList(HttpServletRequest request) {
+        return JsonVos.ok(classService.getList(request.getHeader(Constants.Web.HEADER_TOKEN)));
     }
 
     // 删除班级

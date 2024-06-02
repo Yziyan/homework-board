@@ -46,6 +46,8 @@ public interface MapStructs {
     RoleVo po2vo(Role po);
 
     AdminUserVo po2adminUserVo(AdminUsers po);
+
+    @Mapping(source = "description", target = "description")
     CollegeVo po2vo(College po);
     GradeVo po2vo(Grade po);
     ClassVo po2vo(Classes po);
@@ -104,6 +106,7 @@ public interface MapStructs {
     Grade reqVo2po(GradeEditReqVo reqVo);
     Classes reqVo2po(ClassReqVo reqVo);
     Classes reqVo2po(ClassEditReqVo reqVo);
+    @Mapping(source = "collegeId", target = "collegeId")
     Course reqVo2po(CourseReqVo reqVo);
     Course reqVo2po(CourseEditReqVo reqVo);
     StudentCourse reqVo2po(StudentCourseReqVo reqVo);

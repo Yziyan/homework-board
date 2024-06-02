@@ -18,6 +18,9 @@ public class CollegeVo {
     @ApiModelProperty("学院名称")
     private String name;
 
+    @ApiModelProperty("描述")
+    private String description;
+
     @ApiModelProperty("学院logo")
     private String logoUrl;
 }

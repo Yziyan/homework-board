@@ -1,6 +1,8 @@
 package run.hxtia.workbd.service.organization.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -8,6 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 import run.hxtia.workbd.common.enhance.MpLambdaQueryWrapper;
 import run.hxtia.workbd.common.enhance.MpPage;
 import run.hxtia.workbd.common.mapstruct.MapStructs;
+import run.hxtia.workbd.common.redis.Redises;
+import run.hxtia.workbd.common.util.Streams;
 import run.hxtia.workbd.mapper.GradeMapper;
 import run.hxtia.workbd.pojo.po.Grade;
 import run.hxtia.workbd.pojo.vo.organization.request.GradeEditReqVo;
@@ -66,12 +70,35 @@ public class GradeServiceImpl extends ServiceImpl<GradeMapper, Grade> implements
     }
 
     @Override
-    public PageVo<GradeVo> getList() {
+    public PageVo<GradeVo> getAllList() {
         List<Grade> grades = list();
         List<GradeVo> gradeVos = grades.stream()
             .map(MapStructs.INSTANCE::po2vo)
             .collect(Collectors.toList());
 
+        PageVo<GradeVo> pageVo = new PageVo<>();
+        pageVo.setData(gradeVos);
+        pageVo.setCount((long) gradeVos.size());
+        pageVo.setPages(1L); // 这里假设所有的数据都在一个页面，可能需要根据分页逻辑来设置这个值
+
+        return pageVo;
+    }
+
+    @Override
+    public PageVo<GradeVo> getList(String token) {
+        Integer clgIdByToken = Redises.getClgIdByToken(token);
+
+        // 构建查询条件
+        MpLambdaQueryWrapper<Grade> wrapper = new MpLambdaQueryWrapper<>();
+        wrapper.eq(Grade::getCollegeId, clgIdByToken);
+
+        // 执行查询，获取年级信息列表
+        List<Grade> gradeList = baseMapper.selectList(wrapper);
+
+        // 将 Grade 转换为 GradeVo
+        List<GradeVo> gradeVos = Streams.list2List(gradeList, MapStructs.INSTANCE::po2vo);
+
+        // 构建分页结果
         PageVo<GradeVo> pageVo = new PageVo<>();
         pageVo.setData(gradeVos);
         pageVo.setCount((long) gradeVos.size());
@@ -87,10 +114,16 @@ public class GradeServiceImpl extends ServiceImpl<GradeMapper, Grade> implements
 
     @Override
     public List<GradeVo> getGradeInfoByCollegeId(Integer collegeId) {
-        List<Grade> grades = this.query().eq("college_id", collegeId).list();
-        return grades.stream()
-            .map(MapStructs.INSTANCE::po2vo)
-            .collect(Collectors.toList());
+        // 构建查询条件
+        MpLambdaQueryWrapper<Grade> wrapper = new MpLambdaQueryWrapper<>();
+        wrapper.eq(Grade::getCollegeId, collegeId);
+
+        // 执行查询，获取年级信息列表
+        List<Grade> gradeList = baseMapper.selectList(wrapper);
+
+        // 将 Grade 转换为 GradeVo
+
+        return Streams.list2List(gradeList, MapStructs.INSTANCE::po2vo);
     }
 
     @Override
@@ -120,5 +153,18 @@ public class GradeServiceImpl extends ServiceImpl<GradeMapper, Grade> implements
         List<Grade> grades = list(wrapper);
         return grades.stream()
             .collect(Collectors.toMap(Grade::getId, Grade::getName));
+    }
+
+
+    public List<Integer> getGradeIdsByCollegeId(Integer collegeId) {
+        // 构建查询条件
+        MpLambdaQueryWrapper<Grade> wrapper = new MpLambdaQueryWrapper<>();
+        wrapper.eq(Grade::getCollegeId, collegeId);
+
+        // 查询所有年级
+        List<Grade> gradeList = baseMapper.selectList(wrapper);
+
+        // 提取所有年级的 ID 列表
+        return Streams.list2List(gradeList, Grade::getId);
     }
 }

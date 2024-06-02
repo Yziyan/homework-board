@@ -1,8 +1,6 @@
 package run.hxtia.workbd.service.organization.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -11,16 +9,19 @@ import run.hxtia.workbd.common.enhance.MpLambdaQueryWrapper;
 import run.hxtia.workbd.common.enhance.MpPage;
 import run.hxtia.workbd.common.mapstruct.MapStructs;
 import run.hxtia.workbd.common.redis.Redises;
+import run.hxtia.workbd.common.util.Streams;
 import run.hxtia.workbd.mapper.ClassMapper;
 import run.hxtia.workbd.pojo.po.Classes;
-import run.hxtia.workbd.pojo.po.Role;
+import run.hxtia.workbd.pojo.po.Grade;
 import run.hxtia.workbd.pojo.vo.organization.request.ClassEditReqVo;
 import run.hxtia.workbd.pojo.vo.organization.request.ClassReqVo;
 import run.hxtia.workbd.pojo.vo.organization.request.page.ClassPageReqVo;
 import run.hxtia.workbd.pojo.vo.organization.response.ClassVo;
 import run.hxtia.workbd.pojo.vo.common.response.result.PageVo;
+import run.hxtia.workbd.pojo.vo.organization.response.GradeVo;
 import run.hxtia.workbd.service.organization.ClassService;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,6 +32,10 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ClassServiceImpl extends ServiceImpl<ClassMapper, Classes> implements ClassService {
+
+    //年级
+    private final GradeServiceImpl gradeService;
+
 
     @Override
     public boolean save(ClassReqVo reqVo, Integer gradeId) {
@@ -69,7 +74,7 @@ public class ClassServiceImpl extends ServiceImpl<ClassMapper, Classes> implemen
     }
 
     @Override
-    public PageVo<ClassVo> getList() {
+    public PageVo<ClassVo> getAllList() {
         List<Classes> classes = list();
         List<ClassVo> classVos = classes.stream()
             .map(MapStructs.INSTANCE::po2vo)
@@ -82,6 +87,43 @@ public class ClassServiceImpl extends ServiceImpl<ClassMapper, Classes> implemen
 
         return pageVo;
     }
+
+    @Override
+    public PageVo<ClassVo> getList(String token) {
+        Integer clgIdByToken = Redises.getClgIdByToken(token);
+
+        // 获取学院下的所有年级 ID
+        List<Integer> gradeIds = gradeService.getGradeIdsByCollegeId(clgIdByToken);
+
+        // 根据年级 ID 获取所有班级
+        List<ClassVo> classVos = getClassListByGradeIds(gradeIds);
+
+        // 构建分页结果
+        PageVo<ClassVo> pageVo = new PageVo<>();
+        pageVo.setData(classVos);
+        pageVo.setCount((long) classVos.size());
+        pageVo.setPages(1L); // 这里假设所有的数据都在一个页面，可能需要根据分页逻辑来设置这个值
+
+        return pageVo;
+    }
+
+    public List<ClassVo> getClassListByGradeIds(List<Integer> gradeIds) {
+
+        if (gradeIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 构建查询条件
+        MpLambdaQueryWrapper<Classes> wrapper = new MpLambdaQueryWrapper<>();
+        wrapper.in(Classes::getGradeId, gradeIds);
+
+        // 查询所有班级
+        List<Classes> classList = baseMapper.selectList(wrapper);
+
+        // 将 Classes 转换为 ClassVo
+        return Streams.list2List(classList, MapStructs.INSTANCE::po2vo);
+    }
+
 
     @Override
     public PageVo<ClassVo> listPage(ClassPageReqVo pageReqVo) {

@@ -18,6 +18,7 @@ import run.hxtia.workbd.pojo.vo.organization.request.page.GradePageReqVo;
 import run.hxtia.workbd.pojo.vo.organization.response.GradeVo;
 import run.hxtia.workbd.service.organization.GradeService;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.function.Function;
@@ -69,10 +70,17 @@ public class GradeController extends BaseController<Grade, GradeReqVo> {
 
     // 获取所有年级列表
     @GetMapping("/list")
+    @ApiOperation("获取某个年级下的所有年级列表")
+    @RequiresPermissions(Constants.Permission.GRADE_READ)
+    public PageJsonVo<GradeVo> getList(HttpServletRequest request) {
+        return JsonVos.ok(gradeService.getList(request.getHeader(Constants.Web.HEADER_TOKEN)));
+    }
+
+    @GetMapping("/Alllist")
     @ApiOperation("获取所有年级列表")
     @RequiresPermissions(Constants.Permission.GRADE_READ)
-    public PageJsonVo<GradeVo> getList() {
-        return JsonVos.ok(gradeService.getList());
+    public PageJsonVo<GradeVo> getAllList() {
+        return JsonVos.ok(gradeService.getAllList());
     }
 
 

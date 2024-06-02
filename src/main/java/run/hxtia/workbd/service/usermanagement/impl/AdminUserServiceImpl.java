@@ -315,7 +315,6 @@ public class AdminUserServiceImpl
         return baseMapper.
             selectPage(new MpPage<>(pageReqVo), wrapper).
             buildVo(MapStructs.INSTANCE::po2adminUserVo);
-
     }
     /**
      * 忘记密码，并且修改密码

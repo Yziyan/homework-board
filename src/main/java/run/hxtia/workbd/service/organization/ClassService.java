@@ -54,7 +54,14 @@ public interface ClassService extends IService<Classes> {
      * 获取所有班级信息
      * @return 所有班级信息
      */
-    PageVo<ClassVo> getList();
+    PageVo<ClassVo> getAllList();
+
+    /**
+     * 获取所有班级信息
+     * @return 所有班级信息
+     */
+    PageVo<ClassVo> getList(String token);
+
 
     /**
      * 检查班级是否存在。
@@ -82,5 +89,6 @@ public interface ClassService extends IService<Classes> {
      * @return 班级信息列表
      */
     List<ClassVo> getClassesByIds(List<Integer> classIds);
+
 
 }

@@ -57,7 +57,13 @@ public interface GradeService extends IService<Grade> {
      * 获取所有年级信息
      * @return 所有年级信息
      */
-    PageVo<GradeVo> getList();
+    PageVo<GradeVo> getAllList();
+
+    /**
+     * 获取本学院下所有年级信息
+     * @return 所有年级信息
+     */
+    PageVo<GradeVo> getList(String token);
 
     /**
      * 检查年级是否存在。
