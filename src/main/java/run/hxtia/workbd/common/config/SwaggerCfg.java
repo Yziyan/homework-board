@@ -147,7 +147,7 @@ public class SwaggerCfg implements InitializingBean {
     public void afterPropertiesSet() throws Exception {
         // 配置只能在 dev、test环境使用文档
         // 这里生成环境也提供文档给强子，在实际生产中不应该提供，但是为了方便强子调试，所以提供
-        enable = environment.acceptsProfiles(Profiles.of("dev", "test","prod"));
+        enable = environment.acceptsProfiles(Profiles.of("dev", "test"));
     }
 
     // 配置全局的token

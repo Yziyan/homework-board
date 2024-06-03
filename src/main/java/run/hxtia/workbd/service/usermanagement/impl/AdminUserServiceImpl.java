@@ -126,8 +126,11 @@ public class AdminUserServiceImpl
         // 验证用户是否存在
         if (po != null) return JsonVos.raise(CodeMsg.EXIST_USERS);
 
+        String defaultName = po.getEmail() + "的组织";
+
         // 注册学院
         College defaultClg = new College();
+        defaultClg.setName(defaultName);
         if (!collegeService.saveDefaultRegisterClg(defaultClg)) {
             return JsonVos.raise(CodeMsg.REGISTER_ERROR);
         }
