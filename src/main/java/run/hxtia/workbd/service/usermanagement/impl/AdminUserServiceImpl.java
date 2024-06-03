@@ -22,6 +22,7 @@ import run.hxtia.workbd.pojo.po.AdminUsers;
 import run.hxtia.workbd.pojo.po.College;
 import run.hxtia.workbd.pojo.po.Resource;
 import run.hxtia.workbd.pojo.po.Role;
+import run.hxtia.workbd.pojo.vo.organization.request.CollegeReqVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.request.AdminLoginReqVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.request.page.AdminUserPageReqVo;
 import run.hxtia.workbd.pojo.vo.common.response.AdminLoginVo;

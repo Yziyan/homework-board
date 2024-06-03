@@ -2,6 +2,7 @@ package run.hxtia.workbd.pojo.vo.organization.request;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
@@ -11,6 +12,7 @@ import javax.validation.constraints.NotBlank;
  * @date 2024/5/5
  */
 @Data
+@AllArgsConstructor
 @ApiModel("【保存】学院实体")
 public class CollegeReqVo {
 
@@ -24,5 +26,10 @@ public class CollegeReqVo {
     @ApiModelProperty(value = "学院logo", required = true)
     private String logoUrl;
 
+    public CollegeReqVo() {
+    }
 
+    public CollegeReqVo(String name) {
+        this.name = name;
+    }
 }

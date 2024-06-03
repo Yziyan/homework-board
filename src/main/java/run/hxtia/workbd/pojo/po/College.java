@@ -1,5 +1,7 @@
 package run.hxtia.workbd.pojo.po;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import java.io.Serializable;
@@ -16,6 +18,7 @@ public class College implements Serializable {
     /**
      * 学院ID
      */
+    @TableId(type = IdType.AUTO)
     private Integer id;
 
     /**
@@ -42,5 +45,21 @@ public class College implements Serializable {
      * 更新时间
      */
     private Date updatedAt;
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }
 

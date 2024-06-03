@@ -1,6 +1,5 @@
 package run.hxtia.workbd.service.organization.impl;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -8,13 +7,10 @@ import org.springframework.transaction.annotation.Transactional;
 import run.hxtia.workbd.common.enhance.MpLambdaQueryWrapper;
 import run.hxtia.workbd.common.enhance.MpPage;
 import run.hxtia.workbd.common.mapstruct.MapStructs;
-import run.hxtia.workbd.common.redis.Redises;
 import run.hxtia.workbd.mapper.CollegeMapper;
-import run.hxtia.workbd.pojo.po.AdminUsers;
 import run.hxtia.workbd.pojo.po.College;
 import run.hxtia.workbd.pojo.vo.organization.request.CollegeEditReqVo;
 import run.hxtia.workbd.pojo.vo.organization.request.CollegeReqVo;
-import run.hxtia.workbd.pojo.vo.common.request.page.PageReqVo;
 import run.hxtia.workbd.pojo.vo.organization.request.page.CollegePageReqVo;
 import run.hxtia.workbd.pojo.vo.organization.response.CollegeVo;
 import run.hxtia.workbd.pojo.vo.common.response.result.PageVo;
@@ -30,6 +26,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class CollegeServiceImpl extends ServiceImpl<CollegeMapper, College> implements CollegeService {
+
+    private final CollegeMapper collegeMapper;
 
     @Override
     public boolean save(CollegeReqVo reqVo) {
@@ -113,6 +111,6 @@ public class CollegeServiceImpl extends ServiceImpl<CollegeMapper, College> impl
     @Transactional(readOnly = false)
     public boolean saveDefaultRegisterClg(College collegeInfo) {
         if(collegeInfo == null) return false;
-        return baseMapper.insertDefaultRegisterCollege(collegeInfo) > 0;
+        return collegeMapper.insertDefaultRegisterCollegeName(collegeInfo) > 0;
     }
 }
