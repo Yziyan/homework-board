@@ -126,7 +126,7 @@ public class AdminUserServiceImpl
         // 验证用户是否存在
         if (po != null) return JsonVos.raise(CodeMsg.EXIST_USERS);
 
-        String defaultName = po.getEmail() + "的组织";
+        String defaultName = reqVo.getEmail() + "的组织";
 
         // 注册学院
         College defaultClg = new College();
