@@ -1,5 +1,7 @@
 package run.hxtia.workbd.pojo.vo.notificationwork.request.page;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.googlecode.aviator.annotation.Ignore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -24,4 +26,7 @@ public class HomeworkPageReqVo extends KeywordPageReqVo {
 
     @ApiModelProperty("发布者ID")
     private Integer publisherId;
+
+    @JsonIgnore
+    private String token;
 }

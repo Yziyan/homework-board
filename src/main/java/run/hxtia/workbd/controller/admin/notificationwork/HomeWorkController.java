@@ -20,6 +20,7 @@ import run.hxtia.workbd.pojo.vo.common.response.result.PageJsonVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.request.page.StudentWorkPageReqVo;
 import run.hxtia.workbd.service.notificationwork.HomeworkService;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -41,7 +42,8 @@ public class HomeWorkController {
     @PostMapping("/searchPageList")
     @ApiOperation("获取所有作业信息【分页】")
     @RequiresPermissions(Constants.Permission.HOMEWORK_READ)
-    public PageJsonVo<HomeworkVo> searchPageList(@RequestBody HomeworkPageReqVo pageReqVo) {
+    public PageJsonVo<HomeworkVo> searchPageList(@RequestBody HomeworkPageReqVo pageReqVo, HttpServletRequest request) {
+        pageReqVo.setToken(request.getHeader(Constants.Web.HEADER_TOKEN));
         return JsonVos.ok(workService.list(pageReqVo, Constants.Status.WORK_ENABLE));
     }
 

@@ -69,14 +69,11 @@ public class HomeworkServiceImpl extends ServiceImpl<HomeworkMapper, Homework> i
     }
 
 
-    /**
-     * 分页查询作业
-     * @param pageReqVo：分页信息
-     * @param status：作业状态 【1：可用作业 0：历史作业】
-     * @return 分页后的数据
-     */
     @Override
     public PageVo<HomeworkVo> list(HomeworkPageReqVo pageReqVo, Short status) {
+        // 获取当前管理员的学院ID
+        Integer collegeId = Redises.getClgIdByToken(pageReqVo.getToken());
+
         // 构建分页查询条件
         MpLambdaQueryWrapper<Homework> wrapper = new MpLambdaQueryWrapper<>();
         wrapper.like(pageReqVo.getKeyword(), Homework::getTitle, Homework::getDescription, Homework::getPublishPlatform)
@@ -111,8 +108,19 @@ public class HomeworkServiceImpl extends ServiceImpl<HomeworkMapper, Homework> i
         List<CourseVo> courseList = courseService.getCoursesByIds(courseIds);
         Map<Integer, CourseVo> courseMap = Streams.list2Map(courseList, CourseVo::getId, Function.identity());
 
+        // 过滤出属于当前管理员学院的课程ID
+        List<Integer> collegeCourseIds = courseList.stream()
+            .filter(course -> course.getCollegeId().equals(collegeId))
+            .map(CourseVo::getId)
+            .collect(Collectors.toList());
+
+        // 过滤出属于当前管理员学院的作业
+        List<Homework> filteredHomeworks = homeworks.stream()
+            .filter(homework -> collegeCourseIds.contains(homework.getCourseId()))
+            .collect(Collectors.toList());
+
         // 组装返回的 HomeworkVo 列表
-        List<HomeworkVo> homeworkVos = Streams.list2List(homeworks, po -> {
+        List<HomeworkVo> homeworkVos = Streams.list2List(filteredHomeworks, po -> {
             HomeworkVo vo = MapStructs.INSTANCE.po2vo(po);
             // 映射和设置图片链接
             po.jointPictureLinks(properties.getUpload().getReturnJointPath());
@@ -147,7 +155,7 @@ public class HomeworkServiceImpl extends ServiceImpl<HomeworkMapper, Homework> i
         if (!authInfo.getCourseId().contains(reqVo.getCourseId().toString())) {
             return JsonVos.raise(CodeMsg.AUTH_NOT_PUBLISH);
         }
-        // 去真正的保存作业
+        // 去真正地保存作业
         return saveOrUpdate(reqVo);
     }
 
