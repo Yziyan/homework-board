@@ -74,6 +74,15 @@ public class HomeworkServiceImpl extends ServiceImpl<HomeworkMapper, Homework> i
         // 获取当前管理员的学院ID
         Integer collegeId = Redises.getClgIdByToken(pageReqVo.getToken());
 
+        // 获取该学院的所有课程ID
+        List<CourseVo> courseList = courseService.getCourseListByCollegeId(collegeId);
+        List<Integer> courseIds = courseList.stream().map(CourseVo::getId).collect(Collectors.toList());
+
+        if (courseIds.isEmpty()) {
+            // 如果没有找到任何课程，直接返回空的结果
+            return new PageVo<>(0L, 0L, 1L, pageReqVo.getSize(), Collections.emptyList());
+        }
+
         // 构建分页查询条件
         MpLambdaQueryWrapper<Homework> wrapper = new MpLambdaQueryWrapper<>();
         wrapper.like(pageReqVo.getKeyword(), Homework::getTitle, Homework::getDescription, Homework::getPublishPlatform)
@@ -82,6 +91,7 @@ public class HomeworkServiceImpl extends ServiceImpl<HomeworkMapper, Homework> i
             .eq(pageReqVo.getCourseId() != null, Homework::getCourseId, pageReqVo.getCourseId())
             .eq(pageReqVo.getPublisherId() != null, Homework::getPublisherId, pageReqVo.getPublisherId())
             .eq(Homework::getStatus, status)
+            .in(Homework::getCourseId, courseIds)
             .orderByDesc(Homework::getUpdatedAt);
 
         // 获取分页数据
@@ -101,26 +111,12 @@ public class HomeworkServiceImpl extends ServiceImpl<HomeworkMapper, Homework> i
             return resPages;
         }
 
-        // 获取所有课程ID
-        List<Integer> courseIds = Streams.list2List(homeworks, Homework::getCourseId).stream().distinct().collect(Collectors.toList());
-
         // 批量查询课程信息
-        List<CourseVo> courseList = courseService.getCoursesByIds(courseIds);
-        Map<Integer, CourseVo> courseMap = Streams.list2Map(courseList, CourseVo::getId, Function.identity());
-
-        // 过滤出属于当前管理员学院的课程ID
-        List<Integer> collegeCourseIds = courseList.stream()
-            .filter(course -> course.getCollegeId().equals(collegeId))
-            .map(CourseVo::getId)
-            .collect(Collectors.toList());
-
-        // 过滤出属于当前管理员学院的作业
-        List<Homework> filteredHomeworks = homeworks.stream()
-            .filter(homework -> collegeCourseIds.contains(homework.getCourseId()))
-            .collect(Collectors.toList());
+        Map<Integer, CourseVo> courseMap = courseList.stream()
+            .collect(Collectors.toMap(CourseVo::getId, Function.identity()));
 
         // 组装返回的 HomeworkVo 列表
-        List<HomeworkVo> homeworkVos = Streams.list2List(filteredHomeworks, po -> {
+        List<HomeworkVo> homeworkVos = homeworks.stream().map(po -> {
             HomeworkVo vo = MapStructs.INSTANCE.po2vo(po);
             // 映射和设置图片链接
             po.jointPictureLinks(properties.getUpload().getReturnJointPath());
@@ -132,11 +128,12 @@ public class HomeworkServiceImpl extends ServiceImpl<HomeworkMapper, Homework> i
             }
 
             return vo;
-        });
+        }).collect(Collectors.toList());
 
         resPages.setData(homeworkVos);
         return resPages;
     }
+
 
 
     /**
