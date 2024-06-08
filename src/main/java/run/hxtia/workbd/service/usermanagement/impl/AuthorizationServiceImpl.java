@@ -12,6 +12,7 @@ import run.hxtia.workbd.common.mapstruct.MapStructs;
 import run.hxtia.workbd.common.redis.Redises;
 import run.hxtia.workbd.common.util.Constants;
 import run.hxtia.workbd.common.util.JsonVos;
+import run.hxtia.workbd.common.util.MiniApps;
 import run.hxtia.workbd.common.util.Strings;
 import run.hxtia.workbd.mapper.AuthorizationMapper;
 import run.hxtia.workbd.pojo.dto.AdminUserPermissionDto;
@@ -25,6 +26,7 @@ import run.hxtia.workbd.pojo.vo.organization.response.GradeVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.request.*;
 import run.hxtia.workbd.pojo.vo.usermanagement.response.AuthorizationVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.response.CourseAndClassVo;
+import run.hxtia.workbd.pojo.vo.usermanagement.response.StudentAuthorizationSetVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.response.StudentAuthorizationVo;
 import run.hxtia.workbd.service.notificationwork.CourseService;
 import run.hxtia.workbd.service.organization.ClassService;
@@ -101,39 +103,46 @@ public class AuthorizationServiceImpl extends ServiceImpl<AuthorizationMapper, A
         // 定义返回
         CourseAndClassVo courseAndClassVo = new CourseAndClassVo();
 
-        // 从 Redis 中获取用户权限信息
-        AdminUserPermissionDto userPermissionDto = (AdminUserPermissionDto) redises.get(Constants.Web.ADMIN_PREFIX + token);
+        // 学生用户根据 token 获取用户信息
+        StudentInfoDto studentInfoDto = studentService.getStudentByToken(token);
+        // 从studentInfoDto 中取出学生基本信息
+        final String studentId = studentInfoDto.getStudentVo().getWechatId();
 
-        // 获取用户信息
-        AdminUsers users = userPermissionDto.getUsers();
-        // 获取权限
-        List<Resource> resources = userPermissionDto.getResources();
-
-        // 判断权限，根据权限获取课程和班级信息
-
-        // 课程
-        boolean hasQueryCoursePermission = resources.stream()
-            .anyMatch(resource -> "course:read".equals(resource.getPermission()));
-        // 判断是否有“查询课程权限”
-        if (hasQueryCoursePermission) {
-            // 获取课程信息
-            courseAndClassVo.setCourseList(courseService.getCourseListByCollegeId(users.getCollegeId()));
-        } else {
-            // 否则通过用户 id 获取课程信息
-            courseAndClassVo.setCourseList(courseService.getCourseListByTeacherId(Math.toIntExact(users.getId())));
+        // 从 student_authorizations 表中获取课程和班级 ID
+        StudentAuthorizationSetVo studentAuth = studentAuthorizationService.getStudentAuthorizationSetById(studentId);
+        if (studentAuth == null) {
+            return courseAndClassVo;
         }
 
-        // 班级
-        // 获取年级信息
-        List<GradeVo> grades = gradeService.getGradeInfoByCollegeId(users.getCollegeId());
+        // 获取课程和班级 ID 列表
+        List<Integer> courseIds = studentAuth.getCourseId().stream().map(Integer::valueOf).collect(Collectors.toList());
+        List<Integer> classIds = studentAuth.getClassId().stream().map(Integer::valueOf).collect(Collectors.toList());
+
+        // 查询课程信息
+        List<CourseVo> courseList = courseService.getCoursesByIds(courseIds);
+        // 判断courseList是否为空
+        if (courseList.isEmpty()) {
+            // 如果courseList没有，应该放入一个空的courseList
+            courseList = new ArrayList<>();
+        }
+        // 设置返回值
+        courseAndClassVo.setCourseList(courseList);
+
+        // 查询班级信息
+        List<ClassVo> classList = classService.getClassesByIds(classIds);
+        // 判断classList是否为空
+        if (classList.isEmpty()) {
+            return courseAndClassVo;
+        }
 
         // 构造年级及其班级列表的映射
         Map<String, List<ClassVo>> gradList = new HashMap<>();
-        for (GradeVo grade : grades) {
-            // 获取该年级下的班级信息
-            List<ClassVo> classes = classService.getClassInfoByGradeId(grade.getId());
-            gradList.put(grade.getName(), classes);
+        for (ClassVo classVo : classList) {
+            GradeVo grade = gradeService.getGradeInfoById(classVo.getGradeId());
+            gradList.computeIfAbsent(grade.getName(), k -> new ArrayList<>()).add(classVo);
         }
+
+
         courseAndClassVo.setGradList(gradList);
 
         return courseAndClassVo;

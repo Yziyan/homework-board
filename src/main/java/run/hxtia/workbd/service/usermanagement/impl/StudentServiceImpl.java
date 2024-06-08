@@ -116,7 +116,6 @@ public class StudentServiceImpl extends ServiceImpl<StudentMapper, Student> impl
         }
 
         return  true;
-
     }
 
     /**
@@ -149,7 +148,6 @@ public class StudentServiceImpl extends ServiceImpl<StudentMapper, Student> impl
             // 来到这里说明用户是第一次授权，需要注册
             studentInfoDto.setStudentVo(MapStructs.INSTANCE.po2vo(registerUser(openId)));
         }
-
         // 构建其他信息
         //  组织信息
         studentInfoDto.setOrganizationVo(baseMapper.getOrganizationDetailsByStudentId(openId));

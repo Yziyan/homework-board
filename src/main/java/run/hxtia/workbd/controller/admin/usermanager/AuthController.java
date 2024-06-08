@@ -42,10 +42,9 @@ public class  AuthController {
     // 根据权限资源，展示能授权的 课程列表，班级列表
     @PostMapping("/getListByPermission")
     @ApiOperation("通过权限资源，获取课程，班级")
-    @RequiresPermissions(Constants.Permission.AUTHORIZE_READ)
     public DataJsonVo<CourseAndClassVo> getListByPermission(HttpServletRequest request) {
 
-        return JsonVos.ok(authorizationService.getCourseAndClasslistByAuth(request.getHeader(Constants.Web.HEADER_TOKEN)));
+        return JsonVos.ok(authorizationService.getCourseAndClasslistByAuth(request.getHeader(Constants.WxMiniApp.WX_TOKEN)));
     }
 
     // 根据课程id，和班级id 列表生成code

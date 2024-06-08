@@ -16,10 +16,7 @@ import run.hxtia.workbd.pojo.vo.common.response.result.DataJsonVo;
 import run.hxtia.workbd.pojo.vo.common.response.result.JsonVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.response.CourseAndClassVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.response.StudentCodeVo;
-import run.hxtia.workbd.service.usermanagement.AuthorizationService;
-import run.hxtia.workbd.service.usermanagement.StudentAuthorizationService;
-import run.hxtia.workbd.service.usermanagement.StudentCodeService;
-import run.hxtia.workbd.service.usermanagement.StudentService;
+import run.hxtia.workbd.service.usermanagement.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -95,6 +92,13 @@ public class StudentController {
         String token = request.getHeader(Constants.WxMiniApp.WX_TOKEN);
         List<StudentCodeVo> studentCodeVos = studentCodeService.studentCodelist(token);
         return JsonVos.ok(studentCodeVos);
+    }
+
+    // 根据权限资源，展示能授权的 课程列表，班级列表
+    @PostMapping("/getListByPermission")
+    @ApiOperation("通过学生授权，获取课程，班级")
+    public DataJsonVo<CourseAndClassVo> getListByPermission(HttpServletRequest request) {
+        return JsonVos.ok(authorizationService.getCourseAndClasslistByAuth(request.getHeader(Constants.WxMiniApp.WX_TOKEN)));
     }
 
 }

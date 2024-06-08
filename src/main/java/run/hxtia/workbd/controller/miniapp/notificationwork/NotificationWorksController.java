@@ -95,7 +95,7 @@ public class NotificationWorksController {
 
     @PostMapping("/publishWork")
     @ApiOperation("发布作业")
-    public JsonVo create(@Valid HomeworkReqVo reqVo, HttpServletRequest request) throws Exception {
+    public JsonVo create(@Valid @RequestBody HomeworkReqVo reqVo, HttpServletRequest request) throws Exception {
         // 标记发布平台为 WX 后再去保存
         reqVo.fillInfo(Constants.Status.PUBLISH_PLAT_WX, request.getHeader(Constants.WxMiniApp.WX_TOKEN));
         if (workService.saveOrUpdateFromWx(reqVo)) {
