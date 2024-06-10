@@ -197,6 +197,14 @@ public class AuthorizationServiceImpl extends ServiceImpl<AuthorizationMapper, A
 
         // 从redis中获取code key对应的value
         AuthCourseAndClassIdReqVo reqVo = redises.getT(Constants.Auth.AUTH_CODE + code);
+        if (reqVo == null) {
+            // 如果redis中没有对应的code key，检查数据库中的code
+            reqVo = codesService.getCodeFromDatabase(code);
+            if (reqVo == null) {
+                // 如果数据库中也没有对应的code key，抛出异常或者返回错误信息
+                JsonVos.raise(CodeMsg.AUTH_CODE_NOT_EXIT);
+            }
+        }
 
         // 课程 和 班级
         final String courseIdsStr = reqVo.getCourseIds();
@@ -261,13 +269,23 @@ public class AuthorizationServiceImpl extends ServiceImpl<AuthorizationMapper, A
             String existingClassIdsStr = studentAuthVo.getClassId();
 
             // 合并课程ID
-            Set<String> courseIdSet = new HashSet<>(Arrays.asList(existingCourseIdsStr.split(",")));
-            courseIdSet.addAll(Arrays.asList(courseIdsStr.split(",")));
+            Set<String> courseIdSet = new HashSet<>();
+            if (existingCourseIdsStr != null && !existingCourseIdsStr.trim().isEmpty()) {
+                courseIdSet.addAll(Arrays.asList(existingCourseIdsStr.split(",")));
+            }
+            if (courseIdsStr != null && !courseIdsStr.trim().isEmpty()) {
+                courseIdSet.addAll(Arrays.asList(courseIdsStr.split(",")));
+            }
             String mergedCourseIdsStr = String.join(",", courseIdSet);
 
             // 合并班级ID
-            Set<String> classIdSet = new HashSet<>(Arrays.asList(existingClassIdsStr.split(",")));
-            classIdSet.addAll(Arrays.asList(classIdsStr.split(",")));
+            Set<String> classIdSet = new HashSet<>();
+            if (existingClassIdsStr != null && !existingClassIdsStr.trim().isEmpty()) {
+                classIdSet.addAll(Arrays.asList(existingClassIdsStr.split(",")));
+            }
+            if (classIdsStr != null && !classIdsStr.trim().isEmpty()) {
+                classIdSet.addAll(Arrays.asList(classIdsStr.split(",")));
+            }
             String mergedClassIdsStr = String.join(",", classIdSet);
 
             // 更新学生授权表
@@ -284,6 +302,9 @@ public class AuthorizationServiceImpl extends ServiceImpl<AuthorizationMapper, A
         CourseAndClassVo courseAndClassVo = new CourseAndClassVo();
         courseAndClassVo.setCourseList(courseList);
         courseAndClassVo.setGradList(gradList);
+
+        // 将学生的 author字段设置为 1
+        studentService.setAuthor(wechatId);
 
         return courseAndClassVo;
     }

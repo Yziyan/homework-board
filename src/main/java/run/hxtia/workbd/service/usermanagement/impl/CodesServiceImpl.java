@@ -17,6 +17,7 @@ import run.hxtia.workbd.pojo.dto.AdminUserPermissionDto;
 import run.hxtia.workbd.pojo.dto.CodesInfoDto;
 import run.hxtia.workbd.pojo.po.AdminUsers;
 import run.hxtia.workbd.pojo.po.Codes;
+import run.hxtia.workbd.pojo.vo.usermanagement.request.AuthCourseAndClassIdReqVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.request.CodeSavaBatchReqVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.request.CodeSaveReqVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.response.CodeAndCourseAndClassInfoVo;
@@ -38,6 +39,8 @@ public class CodesServiceImpl  extends ServiceImpl<CodesMapper, Codes> implement
 
     // redis
     private final Redises redises;
+
+    private final CodesMapper codesMapper;
 
     @Override
     @Transactional(readOnly = false)
@@ -122,6 +125,18 @@ public class CodesServiceImpl  extends ServiceImpl<CodesMapper, Codes> implement
         queryWrapper.select(Codes::getStatus).eq(Codes::getCode, code);
         Codes codes = getOne(queryWrapper);
         return codes != null ? codes.getStatus() : Constants.Status.Code_EXIT;
+    }
+
+    @Override
+    public AuthCourseAndClassIdReqVo getCodeFromDatabase(String code) {
+        Codes codes = codesMapper.selectByCode(code);
+        if (codes == null) {
+            return null;
+        }
+        AuthCourseAndClassIdReqVo reqVo = new AuthCourseAndClassIdReqVo();
+        reqVo.setCourseIds(codes.getCourseId());
+        reqVo.setClassIds(codes.getClassId());
+        return reqVo;
     }
 
 

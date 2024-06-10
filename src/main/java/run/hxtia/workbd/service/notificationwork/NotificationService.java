@@ -29,6 +29,13 @@ public interface NotificationService extends IService<Notification> {
     PageVo<NotificationVo> listPage(NotificationPageReqVo pageReqVo);
 
     /**
+     * 根据学院ID分页获取通知
+     * @param pageReqVo 分页信息
+     * @return 分页后的通知数据
+     */
+    PageVo<NotificationVo> getNotificationsByToken(NotificationPageReqVo pageReqVo);
+
+    /**
      * 保存 or 编辑通知
      * @param reqVo：通知信息
      * @return ：是否成功
@@ -75,7 +82,13 @@ public interface NotificationService extends IService<Notification> {
      * @return ：是否成功
      */
     @Transactional(readOnly = false)
-    boolean saveOrUpdateFromWx(NotificationPublishReqVo reqVo) throws Exception;
+    boolean saveOrUpdate(NotificationPublishReqVo reqVo);
+
+    @Transactional(readOnly = false)
+    boolean saveOrUpdateFromWx(NotificationPublishReqVo reqVo);
+
+    @Transactional(readOnly = false)
+    boolean saveOrUpdateFromAdmin(NotificationPublishReqVo reqVo);
 
     /**
      * 根据UUID删除通知（逻辑删除）

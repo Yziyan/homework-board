@@ -434,4 +434,9 @@ public class AdminUserServiceImpl
         adminUserRoleService.removeByUserId(Long.valueOf(ids));
         return true;
     }
+
+    @Override
+    public Integer countTotalAdmins() {
+        return Math.toIntExact(count());
+    }
 }

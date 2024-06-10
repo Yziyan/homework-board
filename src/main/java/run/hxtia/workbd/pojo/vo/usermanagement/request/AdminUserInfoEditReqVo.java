@@ -18,5 +18,4 @@ public class AdminUserInfoEditReqVo extends AdminUserEdit {
 
     @ApiModelProperty("头像图片数据")
     private MultipartFile avatarFile;
-
 }

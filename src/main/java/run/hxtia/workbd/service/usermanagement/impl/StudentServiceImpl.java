@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.HmacAlgorithms;
 import org.apache.commons.codec.digest.HmacUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import run.hxtia.workbd.common.enhance.MpLambdaQueryWrapper;
 import run.hxtia.workbd.common.enhance.MpPage;
@@ -279,6 +280,21 @@ public class StudentServiceImpl extends ServiceImpl<StudentMapper, Student> impl
             buildVo(MapStructs.INSTANCE::po2vo);
    }
 
+    @Override
+    @Transactional(readOnly = false)
+    public boolean setAuthor(String studentId) {
+        Student student = getById(studentId);
+        if (student != null) {
+            student.setAuthor((short) 1);
+            return updateById(student);
+        }
+        return false;
+    }
+
+    @Override
+    public Integer countTotalStudents() {
+        return Math.toIntExact(count());
+    }
 
     /**
      * 根据 wxTokenVo 构建验证登录状态的 URL

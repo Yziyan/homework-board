@@ -1,5 +1,6 @@
 package run.hxtia.workbd.pojo.po;
 
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
@@ -20,6 +21,7 @@ public class Codes implements Serializable {
     /**
      * 自动递增的主键标识符
      */
+    @TableId
     private Integer id;
 
     /**

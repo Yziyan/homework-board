@@ -1,5 +1,6 @@
 package run.hxtia.workbd.pojo.po;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import java.io.Serializable;
@@ -13,12 +14,19 @@ public class NotificationClass implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 通知ID
+     * 通知UUID
      */
-    private Integer notificationId;
+    @TableField("notification_uuid")
+    private String notificationUuid;
 
     /**
      * 班级ID
      */
+    @TableField("class_id")
     private Integer classId;
+
+    public NotificationClass(String notificationUuid, Integer i) {
+        this.notificationUuid = notificationUuid;
+        this.classId = i;
+    }
 }

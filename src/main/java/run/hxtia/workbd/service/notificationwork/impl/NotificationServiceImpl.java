@@ -1,8 +1,10 @@
 package run.hxtia.workbd.service.notificationwork.impl;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -10,9 +12,11 @@ import org.springframework.util.StringUtils;
 import run.hxtia.workbd.common.enhance.MpLambdaQueryWrapper;
 import run.hxtia.workbd.common.enhance.MpPage;
 import run.hxtia.workbd.common.mapstruct.MapStructs;
+import run.hxtia.workbd.common.redis.Redises;
 import run.hxtia.workbd.common.util.*;
 import run.hxtia.workbd.mapper.NotificationMapper;
 import run.hxtia.workbd.pojo.po.Notification;
+import run.hxtia.workbd.pojo.po.NotificationClass;
 import run.hxtia.workbd.pojo.vo.notificationwork.request.NotificationPublishReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.request.NotifyReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.request.StudentNotificationReqVo;
@@ -23,6 +27,7 @@ import run.hxtia.workbd.pojo.vo.common.response.result.CodeMsg;
 import run.hxtia.workbd.pojo.vo.common.response.result.PageVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.response.StudentVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.response.StudentAuthorizationSetVo;
+import run.hxtia.workbd.service.notificationwork.NotificationClassesService;
 import run.hxtia.workbd.service.notificationwork.NotificationService;
 import run.hxtia.workbd.service.notificationwork.StudentNotificationService;
 import run.hxtia.workbd.service.usermanagement.StudentAuthorizationService;
@@ -40,24 +45,44 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper, Not
     private final StudentAuthorizationService studentAuthorizationService;
 
     private final StudentService studentService;
+    // redis
+    private final Redises redises;
 
+    private final NotificationMapper notificationMapper;
+
+    private final NotificationClassesService notificationClassesService;
 
     /**
      * 分页查询通知
-     *
      * @param pageReqVo ：分页信息
      * @return 分页后的数据
      */
     @Override
     public PageVo<NotificationVo> listPage(NotificationPageReqVo pageReqVo) {
-        // 构建查询条件
-        MpLambdaQueryWrapper<Notification> queryWrapper = new MpLambdaQueryWrapper<>();
-        queryWrapper.like(pageReqVo.getKeyword(), Notification::getTitle, Notification::getContent)
-            .between(pageReqVo.getCreatedTime(), Notification::getCreatedAt);
+        return null;
+    }
 
-        // 返回分页结果
-        return baseMapper.selectPage(new MpPage<>(pageReqVo), queryWrapper)
-            .buildVo(MapStructs.INSTANCE::po2vo);
+    @Override
+    public PageVo<NotificationVo> getNotificationsByToken(NotificationPageReqVo pageReqVo) {
+        Integer collegeId = Redises.getClgIdByToken(pageReqVo.getToken());
+        IPage<Notification> page = new MpPage<>(pageReqVo);
+        IPage<Notification> notificationPage = notificationMapper.selectNotificationsByCollegeId(collegeId, page);
+
+        List<NotificationVo> notificationVos = notificationPage.getRecords().stream()
+            .map(notification -> {
+                NotificationVo vo = new NotificationVo();
+                BeanUtils.copyProperties(notification, vo);
+                return vo;
+            }).collect(Collectors.toList());
+
+        PageVo<NotificationVo> pageVo = new PageVo<>();
+        pageVo.setData(notificationVos);
+        pageVo.setCount(notificationPage.getTotal());
+        pageVo.setPages(notificationPage.getPages());
+        pageVo.setPageSize(notificationPage.getSize());
+        pageVo.setCurrentPage(notificationPage.getCurrent());
+
+        return pageVo;
     }
 
     /**
@@ -134,32 +159,56 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper, Not
 
 
 
-
-    // TODO 待完成发布通知实现
     @Override
     @Transactional(readOnly = false)
-    public boolean saveOrUpdateFromWx(NotificationPublishReqVo reqVo) throws Exception {
+    public boolean saveOrUpdateFromWx(NotificationPublishReqVo reqVo) {
         // 使用 token 解析出微信 id
         String weChatId = MiniApps.getOpenId(reqVo.getWxToken());
         reqVo.getNotification().setPublishId(weChatId);
 
+        // 查看当前用户权限
+        StudentAuthorizationSetVo authInfo = studentAuthorizationService.getStudentAuthorizationSetById(weChatId);
+
+        // 检查权限
+        if (!checkPermission(reqVo, authInfo)) {
+            return JsonVos.raise(CodeMsg.AUTH_NOT_PUBLISH);
+        }
+
+        return saveOrUpdate(reqVo);
+    }
+
+    private boolean checkPermission(NotificationPublishReqVo reqVo, StudentAuthorizationSetVo authInfo) {
+        if (Objects.equals(reqVo.getType(), Constants.Status.NOTIFICATION_STATUS_USER)) {
+            // 发给学生
+            String studentIdsStr = reqVo.getReqTos().getStudentId();
+            Set<String> studentIds = new HashSet<>(Arrays.asList(studentIdsStr.split(",")));
+
+            // 获取这些学生的班级ID
+            List<StudentVo> students = studentService.getStudentsByStudentIds(new ArrayList<>(studentIds));
+            Set<String> classIdSet = students.stream()
+                .map(student -> String.valueOf(student.getClassId()))
+                .collect(Collectors.toSet());
+
+            // 检查是否有权限
+            return classIdSet.stream()
+                .allMatch(authInfo.getClassId()::contains);
+        } else {
+            // 发班级
+            return authInfo.getClassId().contains(reqVo.getReqTos().getClassId());
+        }
+    }
+
+    // TODO 待完成发布通知实现
+    @Override
+    @Transactional(readOnly = false)
+    public boolean saveOrUpdate(NotificationPublishReqVo reqVo) {
         // 随机生成通知 UUID
         String notificationUuid = Strings.getUUID(10);
         reqVo.getNotification().setNotificationUuid(notificationUuid);
 
-
-        // 查看当前用户权限
-        StudentAuthorizationSetVo authInfo = studentAuthorizationService.getStudentAuthorizationSetById(weChatId);
-
         // 发班级
-        if (Objects.equals(reqVo.getType(), Constants.Status.NOTIFICATION_STATUS_CLASS)){
+        if (Objects.equals(reqVo.getType(), Constants.Status.NOTIFICATION_STATUS_CLASS)) {
             // 发给班级
-            // 然后去学生授权表中查看有无这个班级的权限。
-            if (!authInfo.getClassId().contains(reqVo.getReqTos().getClassId())) {
-                return JsonVos.raise(CodeMsg.AUTH_NOT_PUBLISH);
-            }
-
-            // 有权限可以发
             // 1. 保存通知源信息
             saveOrUpdate(reqVo.getNotification());
 
@@ -167,7 +216,14 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper, Not
             String classIdsStr = reqVo.getReqTos().getClassId();
             List<StudentVo> students = studentService.getStudentsByClassIdsString(classIdsStr);
 
-            // 3. 保存学生通知
+            // 3. 保存通知班级表
+            List<NotificationClass> notificationClasses = Arrays.stream(classIdsStr.split(","))
+                .map(classId -> new NotificationClass(notificationUuid, Integer.parseInt(classId)))
+                .collect(Collectors.toList());
+
+            notificationClassesService.saveBatch(notificationClasses);
+
+            // 4. 保存学生通知
             List<StudentNotificationReqVo> studentNotificationReqVoList = students.stream()
                 .map(student -> new StudentNotificationReqVo(null,
                     student.getWechatId(),
@@ -186,19 +242,7 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper, Not
 
             // 获取这些学生的班级ID
             List<StudentVo> students = studentService.getStudentsByStudentIds(new ArrayList<>(studentIds));
-            Set<String> classIdSet = students.stream()
-                .map(student -> String.valueOf(student.getClassId()))
-                .collect(Collectors.toSet());
 
-            // 检查是否有权限
-            boolean hasPermission = classIdSet.stream()
-                .allMatch(authInfo.getClassId()::contains);
-
-            if (!hasPermission) {
-                return JsonVos.raise(CodeMsg.AUTH_NOT_PUBLISH);
-            }
-
-            // 有权限可以发
             // 1. 保存通知源信息
             saveOrUpdate(reqVo.getNotification());
 
@@ -214,6 +258,18 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper, Not
         }
 
         return false;
+    }
+
+
+    @Override
+    @Transactional(readOnly = false)
+    public boolean saveOrUpdateFromAdmin(NotificationPublishReqVo reqVo) {
+        // 获取管理员ID作为发布者ID
+        String adminId = String.valueOf(reqVo.getAdminId());
+        reqVo.getNotification().setPublishId(adminId);
+
+        // 管理员无需权限检查，可以直接发布
+        return saveOrUpdate(reqVo);
     }
 
     @Override

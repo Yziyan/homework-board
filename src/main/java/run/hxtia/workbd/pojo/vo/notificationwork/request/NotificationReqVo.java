@@ -6,6 +6,7 @@ import lombok.Data;
 
 import javax.validation.constraints.NotNull;
 import java.lang.reflect.Array;
+import java.util.List;
 
 @Data
 @ApiModel("【创建】通知信息")
@@ -33,7 +34,7 @@ public class NotificationReqVo {
     private String receiver_ids;
 
     @ApiModelProperty(value = "班级ID列表", required = true)
-    private String class_id;
+    private List<String> class_id;
 
 
 

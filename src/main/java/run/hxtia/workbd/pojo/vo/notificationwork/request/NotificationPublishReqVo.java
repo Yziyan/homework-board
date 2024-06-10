@@ -1,5 +1,6 @@
 package run.hxtia.workbd.pojo.vo.notificationwork.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -26,6 +27,9 @@ public class NotificationPublishReqVo {
 
     // C 端学生想要发布通知，需要 Token
     private String wxToken;
+
+    @ApiModelProperty("发布者id")
+    private Integer adminId;
 
     public void fillInfo(String wxToken) {
         this.wxToken = wxToken;

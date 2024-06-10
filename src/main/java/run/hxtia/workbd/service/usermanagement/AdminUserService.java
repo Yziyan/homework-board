@@ -113,4 +113,9 @@ public interface AdminUserService extends IService<AdminUsers> {
     @Transactional(readOnly = false)
     boolean delete(String ids);
 
+    /**
+     * 统计管理员总人数
+     * @return 管理员总人数
+     */
+    Integer countTotalAdmins();
 }

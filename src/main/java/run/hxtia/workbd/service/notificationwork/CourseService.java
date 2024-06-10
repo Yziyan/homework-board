@@ -91,4 +91,9 @@ public interface CourseService extends IService<Course> {
      */
     List<CourseVo> getCoursesByIds(List<Integer> courseIds);
 
+    /**
+     * 统计课程总数
+     * @return 课程总数
+     */
+    Integer countTotalCourses();
 }

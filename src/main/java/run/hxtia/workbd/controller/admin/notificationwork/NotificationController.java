@@ -9,10 +9,14 @@ import org.springframework.web.bind.annotation.*;
 import run.hxtia.workbd.common.util.Constants;
 import run.hxtia.workbd.common.util.JsonVos;
 import run.hxtia.workbd.pojo.vo.common.response.result.*;
+import run.hxtia.workbd.pojo.vo.notificationwork.request.NotificationPublishReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.request.page.NotificationPageReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.request.NotificationReqVo;
 import run.hxtia.workbd.pojo.vo.notificationwork.response.NotificationVo;
 import run.hxtia.workbd.service.notificationwork.NotificationService;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 /**
  * @author Xiaojin
@@ -27,11 +31,19 @@ import run.hxtia.workbd.service.notificationwork.NotificationService;
 public class NotificationController {
     private final NotificationService notificationService;
 
+//    @PostMapping("/listtesttest")
+//    @ApiOperation(value = "分页查询通知")
+//    @RequiresPermissions(Constants.Permission.NOTICE_READ)
+//    public PageJsonVo<NotificationVo> list(@RequestBody NotificationPageReqVo pageReqVo,HttpServletRequest request) {
+//        pageReqVo.setToken(request.getHeader(Constants.Web.HEADER_TOKEN));
+//        return JsonVos.ok(notificationService.listPage(pageReqVo));
+//    }
+
     @PostMapping("/list")
-    @ApiOperation(value = "分页查询通知")
-    @RequiresPermissions(Constants.Permission.NOTICE_READ)
-    public PageJsonVo<NotificationVo> list(@RequestBody NotificationPageReqVo pageReqVo) {
-        return JsonVos.ok(notificationService.listPage(pageReqVo));
+    @ApiOperation(value = "分页查询通知 by token")
+    public PageJsonVo<NotificationVo> getNotificationsByToken(@RequestBody NotificationPageReqVo pageReqVo,HttpServletRequest request) {
+        pageReqVo.setToken(request.getHeader(Constants.Web.HEADER_TOKEN));
+        return JsonVos.ok(notificationService.getNotificationsByToken(pageReqVo));
     }
 
     @PostMapping("/saveOrUpdate")
@@ -68,5 +80,16 @@ public class NotificationController {
     @RequiresPermissions(Constants.Permission.NOTICE_DELETE)
     public boolean removeHistory(@RequestParam String ids) {
         return notificationService.removeHistory(ids);
+    }
+
+    // TODO  发布通知接口定义
+    @PostMapping("/publishNotification")
+    @ApiOperation("发布通知")
+    public JsonVo publishNotification(@Valid @RequestBody NotificationPublishReqVo reqVo, HttpServletRequest request) {
+        if (notificationService.saveOrUpdateFromAdmin(reqVo)) {
+            return JsonVos.ok(CodeMsg.SAVE_OK);
+        } else {
+            return JsonVos.error(CodeMsg.SAVE_ERROR);
+        }
     }
 }

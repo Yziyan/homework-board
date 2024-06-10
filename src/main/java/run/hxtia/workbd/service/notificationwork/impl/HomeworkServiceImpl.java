@@ -409,6 +409,11 @@ public class HomeworkServiceImpl extends ServiceImpl<HomeworkMapper, Homework> i
         return pageVo;
     }
 
+    @Override
+    public Integer countTotalHomeworks() {
+        return Math.toIntExact(count());
+    }
+
     /**
      * 检查作业是否能删除【只有是历史作业才能彻底删除】
      * @param workIds ：检查的作业ID

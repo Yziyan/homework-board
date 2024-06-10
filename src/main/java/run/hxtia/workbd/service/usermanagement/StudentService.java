@@ -79,12 +79,21 @@ public interface StudentService extends IService<Student> {
     /**
      * 根据学院ID分页获取学生信息
      *
-     * @param reqVo@return 分页后的学生信息列表
+     * @param reqVo
+     * @return 分页后的学生信息列表
      */
     PageVo<StudentVo> getStudentsByCollegeId(StudentPageReqVo reqVo);
 
     /**
-     * 根据学生id获取学生详细信息
+     * 将学生表中的author字段设置为 1
      */
+    boolean setAuthor(String studentId);
+
+    /**
+     * 统计学生总人数
+     * @return 学生总人数
+     */
+    @Transactional(readOnly = true)
+    Integer countTotalStudents();
 
 }

@@ -103,4 +103,10 @@ public interface HomeworkService extends IService<Homework> {
      * @return 作业信息列表
      */
     PageVo<HomeworkVo> getWorkInfoByCourseIds(CourseIdWorkPageReqVo reqVo);
+
+    /**
+     * 统计作业总数
+     * @return 作业总数
+     */
+    Integer countTotalHomeworks();
 }

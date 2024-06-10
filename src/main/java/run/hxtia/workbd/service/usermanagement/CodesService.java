@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 import run.hxtia.workbd.pojo.dto.CodesInfoDto;
 import run.hxtia.workbd.pojo.po.Codes;
 import run.hxtia.workbd.pojo.vo.organization.request.CollegeReqVo;
+import run.hxtia.workbd.pojo.vo.usermanagement.request.AuthCourseAndClassIdReqVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.request.CodeSavaBatchReqVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.request.CodeSaveReqVo;
 import run.hxtia.workbd.pojo.vo.usermanagement.response.CodeAndCourseAndClassInfoVo;
@@ -62,4 +63,11 @@ public interface CodesService extends IService<Codes> {
      */
     Short checkCodeStatus(String code);
 
+
+    /**
+     * 从数据库中获取授权码信息
+     * @param code 授权码
+     * @return 授权码信息
+     */
+    AuthCourseAndClassIdReqVo getCodeFromDatabase(String code);
 }

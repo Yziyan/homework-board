@@ -168,4 +168,9 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
             .map(MapStructs.INSTANCE::po2vo)
             .collect(Collectors.toList());
     }
+
+    @Override
+    public Integer countTotalCourses() {
+        return Math.toIntExact(count());
+    }
 }

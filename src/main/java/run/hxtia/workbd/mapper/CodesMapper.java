@@ -21,4 +21,13 @@ public interface CodesMapper extends BaseMapper<Codes> {
         "LEFT JOIN colleges col ON gr.college_id = col.id " +
         "WHERE c.publish_id = #{userId}")
     List<CodeAndCourseAndClassInfoVo> getCodeListByUserId(@Param("userId") Integer userId);
+
+    /**
+     * 根据code获取授权码信息
+     * @param code 授权码
+     * @return 授权码信息
+     */
+    @Select("SELECT * FROM codes WHERE code = #{code}")
+    Codes selectByCode(@Param("code") String code);
+
 }

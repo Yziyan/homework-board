@@ -57,7 +57,7 @@ public interface ClassService extends IService<Classes> {
     PageVo<ClassVo> getAllList();
 
     /**
-     * 获取所有班级信息
+     * 获取学院下的所有班级信息
      * @return 所有班级信息
      */
     PageVo<ClassVo> getList(String token);
